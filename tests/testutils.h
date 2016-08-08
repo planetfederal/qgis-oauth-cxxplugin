@@ -4,6 +4,8 @@
 #include <QString>
 #include <QFile>
 
+#include "qgsconfig.h"
+
 #include <stdlib.h>
 
 inline void setPrefixEnviron()
