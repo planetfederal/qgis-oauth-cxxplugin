@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/oauth2method">
+        <file>oauth2_resources/hidden.svg</file>
+        <file>oauth2_resources/visible.svg</file>
+        <file>oauth2_resources/visible_red.svg</file>
+    </qresource>
+</RCC>

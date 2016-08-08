@@ -1,0 +1,7 @@
+scripts
+*.prepare
+astyle.*.diff
+sha-*.diff
+*.sortinc
+*.zip
+diffs
