@@ -64,7 +64,7 @@ void QgsAuthOAuth2Edit::initGui()
 
   // TODO: add messagebar to notify frame?
 
-  tabConfigs->setCurrentIndex( customTab() );
+  tabConfigs->setCurrentIndex( definedTab() );
 
   btnExport->setEnabled( false );
 
@@ -341,7 +341,10 @@ void QgsAuthOAuth2Edit::loadFromOAuthConfig( const QgsAuthOAuth2Config *config )
   // load relative to config type
   if ( config->configType() == QgsAuthOAuth2Config::Custom )
   {
-    tabConfigs->setCurrentIndex( customTab() );
+    if ( config->isValid() )
+    {
+      tabConfigs->setCurrentIndex( customTab() );
+    }
     pteDescription->setPlainText( config->description() );
     leRequestUrl->setText( config->requestUrl() );
     leTokenUrl->setText( config->tokenUrl() );
@@ -524,17 +527,28 @@ void QgsAuthOAuth2Edit::loadDefinedConfigs()
     ++i;
   }
 
+  if ( lstwdgDefinedConfigs->count() == 0 )
+  {
+    QListWidgetItem* itm = new QListWidgetItem( lstwdgDefinedConfigs );
+    itm->setText( tr( "No predefined configurations found on disk" ) );
+    QFont f( itm->font() );
+    f.setItalic( true );
+    itm->setFont( f );
+    itm->setFlags( Qt::NoItemFlags );
+    lstwdgDefinedConfigs->addItem( itm );
+  }
+
   selectCurrentDefinedConfig();
 }
 
 bool QgsAuthOAuth2Edit::onCustomTab() const
 {
-  return mCurTab == 0;
+  return mCurTab == customTab();
 }
 
 bool QgsAuthOAuth2Edit::onDefinedTab() const
 {
-  return mCurTab == 1;
+  return mCurTab == definedTab();
 }
 
 // slot
