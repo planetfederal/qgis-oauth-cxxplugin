@@ -18,6 +18,7 @@
 
 #include <QObject>
 #include <QDialog>
+#include <QEventLoop>
 
 #include "qgsauthmethod.h"
 
@@ -53,6 +54,8 @@ class QgsAuthOAuth2Method : public QgsAuthMethod
     void updateMethodConfig( QgsAuthMethodConfig &mconfig ) override;
 
   public slots:
+    void linkingAborted();
+
     void onLinkedChanged();
     void onLinkingFailed();
     void onLinkingSucceeded();
@@ -63,6 +66,10 @@ class QgsAuthOAuth2Method : public QgsAuthMethod
     void onNetworkError( QNetworkReply::NetworkError error );
 
   private:
+    bool mLinkingAborted;
+    QEventLoop *mLocalEventLoop;
+    QString mTempStorePath;
+
     QgsO2* getOAuth2Bundle( const QString &authcfg, bool fullconfig = true );
 
     void putOAuth2Bundle( const QString &authcfg, QgsO2* bundle );
