@@ -137,6 +137,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     // block request update until asynchronous linking loop is quit
     mLocalEventLoop->exec();
     mLocalEventLoop->deleteLater();
+    mLocalEventLoop = nullptr;
 
     // don't re-apply a setting that wasn't already set
     if ( prevtimeout == -1 )
@@ -232,6 +233,8 @@ bool QgsAuthOAuth2Method::updateNetworkReply( QNetworkReply *reply, const QStrin
 
 void QgsAuthOAuth2Method::linkingAborted()
 {
+  QgsDebugMsg( "Entered" );
+
   if ( mLocalEventLoop )
   {
     mLocalEventLoop->quit();
