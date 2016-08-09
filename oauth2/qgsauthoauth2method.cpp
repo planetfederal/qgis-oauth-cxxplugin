@@ -45,6 +45,7 @@ QMap<QString, QgsO2* > QgsAuthOAuth2Method::smOAuth2ConfigCache =
 QgsAuthOAuth2Method::QgsAuthOAuth2Method()
     : QgsAuthMethod()
     , mLinkingAborted( false )
+    , mAbortTimer( 0 )
     , mLocalEventLoop( 0 )
 {
   setVersion( 1 );
@@ -129,13 +130,23 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     mLocalEventLoop->connect( o2, SIGNAL( linkingSucceeded() ), SLOT( quit() ) );
 
     // add singlshot timer to quit after an alloted timeout,
-    QTimer::singleShot( reqtimeout * 10, this, SLOT( linkingAborted() ) );
+    mAbortTimer = new QTimer( this );
+    mAbortTimer->setInterval( reqtimeout * 5 );
+    mAbortTimer->setSingleShot( true );
+    connect( mAbortTimer, SIGNAL( timeout() ), this, SLOT( linkingAborted() ), Qt::UniqueConnection );
+    mAbortTimer->start();
 
     // asynchronously attempt the linking
     o2->link();
 
     // block request update until asynchronous linking loop is quit
     mLocalEventLoop->exec();
+    if ( mAbortTimer->isActive() )
+    {
+      mAbortTimer->stop();
+    }
+    mAbortTimer->deleteLater();
+    mAbortTimer = nullptr;
     mLocalEventLoop->deleteLater();
     mLocalEventLoop = nullptr;
 

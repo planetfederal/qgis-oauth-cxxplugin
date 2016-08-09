@@ -19,6 +19,7 @@
 #include <QObject>
 #include <QDialog>
 #include <QEventLoop>
+#include <QTimer>
 
 #include "qgsauthmethod.h"
 
@@ -67,6 +68,7 @@ class QgsAuthOAuth2Method : public QgsAuthMethod
 
   private:
     bool mLinkingAborted;
+    QTimer *mAbortTimer;
     QEventLoop *mLocalEventLoop;
     QString mTempStorePath;
 
