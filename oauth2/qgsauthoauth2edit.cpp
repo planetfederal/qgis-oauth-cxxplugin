@@ -143,12 +143,6 @@ void QgsAuthOAuth2Edit::setupConnections()
   connect( spnbxRequestTimeout, SIGNAL( valueChanged( int ) ),
            mOAuthConfigCustom, SLOT( setRequestTimeout( int ) ) );
 
-  // FIXME: bad access crash when loading a config, as it tries to write back to it
-//  connect( tblwdgQueryPairs->model(), SIGNAL( rowsInserted( const QModelIndex &, int, int ) ),
-//           this, SLOT( updateConfigQueryPairs() ) );
-//  connect( tblwdgQueryPairs->model(), SIGNAL( rowsRemoved( const QModelIndex &, int, int ) ),
-//           this, SLOT( updateConfigQueryPairs() ) );
-
   connect( mOAuthConfigCustom, SIGNAL( validityChanged( bool ) ),
            this, SLOT( configValidityChanged() ) );
 
