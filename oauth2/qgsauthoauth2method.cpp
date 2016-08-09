@@ -232,7 +232,10 @@ bool QgsAuthOAuth2Method::updateNetworkReply( QNetworkReply *reply, const QStrin
 
 void QgsAuthOAuth2Method::linkingAborted()
 {
-  mLocalEventLoop->quit();
+  if ( mLocalEventLoop )
+  {
+    mLocalEventLoop->quit();
+  }
   //mLocalEventLoop->deleteLater();
   mLinkingAborted = true;
 }
