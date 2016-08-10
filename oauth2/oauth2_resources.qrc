@@ -3,5 +3,6 @@
         <file>oauth2_resources/hidden.svg</file>
         <file>oauth2_resources/visible.svg</file>
         <file>oauth2_resources/visible_red.svg</file>
+        <file>oauth2_verification_finished.html</file>
     </qresource>
 </RCC>

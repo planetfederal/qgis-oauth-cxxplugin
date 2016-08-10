@@ -120,7 +120,7 @@ void QgsO2::setSettingsStore( bool persist )
 
 void QgsO2::setVerficationResponseContent()
 {
-  QFile verhtml( QgsApplication::pkgDataPath() + "/oauth2_verification_finished.html" );
+  QFile verhtml( ":/oauth2method/oauth2_verification_finished.html" );
   if ( verhtml.open( QIODevice::ReadOnly | QIODevice::Text ) )
   {
     setReplyContent( verhtml.readAll() );
