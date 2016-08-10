@@ -22,6 +22,8 @@
 #include "qgsauthmanager.h"
 #include "qgslogger.h"
 
+#include "qgsauthconfigedit.h"
+
 
 QgsAuthOAuth2Edit::QgsAuthOAuth2Edit( QWidget *parent )
     : QgsAuthMethodEdit( parent )
@@ -30,6 +32,7 @@ QgsAuthOAuth2Edit::QgsAuthOAuth2Edit( QWidget *parent )
     , mParentName( 0 )
     , mValid( 0 )
     , mCurTab( 0 )
+    , mPrevPersistToken( false )
 {
   setupUi( this );
 
@@ -74,7 +77,7 @@ void QgsAuthOAuth2Edit::initGui()
   grpbxAdvanced->setFlat( false );
 }
 
-QLineEdit *QgsAuthOAuth2Edit::parentNameField()
+QLineEdit *QgsAuthOAuth2Edit::parentNameField() const
 {
   return parent() ? parent()->findChild<QLineEdit*>( "leName" ) : 0;
 }
@@ -206,6 +209,8 @@ QgsStringMap QgsAuthOAuth2Edit::configMap() const
     //###################### DO NOT LEAVE ME UNCOMMENTED #####################
 
     configmap.insert( "oauth2config", QString( configtxt ) );
+
+    updateTokenCacheFile( mOAuthConfigCustom->persistToken() );
   }
   else if ( onDefinedTab() && !mDefinedId.isEmpty() )
   {
@@ -251,6 +256,8 @@ void QgsAuthOAuth2Edit::loadConfig( const QgsStringMap &configmap )
 
       // could only be loading defaults at this point
       loadFromOAuthConfig( mOAuthConfigCustom );
+
+      mPrevPersistToken = mOAuthConfigCustom->persistToken();
     }
     else
     {
@@ -364,6 +371,93 @@ void QgsAuthOAuth2Edit::loadFromOAuthConfig( const QgsAuthOAuth2Config *config )
   }
 
   validateConfig();
+}
+
+void QgsAuthOAuth2Edit::updateTokenCacheFile( bool curpersist ) const
+{
+  // default for unset persistToken in config and edit GUI is false
+  if ( mPrevPersistToken == curpersist )
+  {
+    return;
+  }
+
+  if ( !parent() )
+  {
+    QgsDebugMsg( "Edit widget has no parent" );
+    return;
+  }
+  const QMetaObject* metaObject = window()->metaObject();
+  QString parentclass = metaObject->className();
+  QgsDebugMsg( QString( "parent class: %1" ).arg( parentclass ) );
+  if ( parentclass != "QgsAuthConfigEdit" )
+  {
+    QgsDebugMsg( "Parent widget not QgsAuthConfigEdit instance" );
+    return;
+  }
+
+  QgsAuthConfigEdit* parentwgdt = qobject_cast<QgsAuthConfigEdit*>( window() );
+  if ( !parentwgdt )
+  {
+    QgsDebugMsg( "Parent FAILED to cast to QgsAuthConfigEdit" );
+    return;
+  }
+
+  QString authcfg = parentwgdt->configId();
+  if ( authcfg.isEmpty() )
+  {
+    QgsDebugMsg( "Auth config ID empty in ID widget of parent" );
+    return;
+  }
+
+  QString localcachefile = QString( "%1/%2" ).arg(
+                             QgsAuthOAuth2Config::tokenCacheDirectory(),
+                             QgsAuthOAuth2Config::tokenCacheFile( authcfg ) );
+
+  QString tempcachefile = QString( "%1/%2" ).arg(
+                            QgsAuthOAuth2Config::tokenCacheDirectory( true ),
+                            QgsAuthOAuth2Config::tokenCacheFile( authcfg ) );
+
+  QgsDebugMsg( QString( "localcachefile: %1" ).arg( localcachefile ) );
+  QgsDebugMsg( QString( "tempcachefile: %1" ).arg( tempcachefile ) );
+
+  if ( curpersist )
+  {
+    // move cache file from temp dir to local
+    if ( QFile::exists( localcachefile ) && !QFile::remove( localcachefile ) )
+    {
+      QgsDebugMsg( QString( "FAILED to delete local token cache file: %1" ).arg( localcachefile ) );
+      return;
+    }
+    if ( QFile::exists( tempcachefile ) && !QFile::copy( tempcachefile, localcachefile ) )
+    {
+      QgsDebugMsg( QString( "FAILED to copy temp to local token cache file: %1 -> %2" ).arg( tempcachefile, localcachefile ) );
+      return;
+    }
+    if ( QFile::exists( tempcachefile ) && !QFile::remove( tempcachefile ) )
+    {
+      QgsDebugMsg( QString( "FAILED to delete temp token cache file after copy: %1" ).arg( tempcachefile ) );
+      return;
+    }
+  }
+  else
+  {
+    // move cache file from local to temp
+    if ( QFile::exists( tempcachefile ) && !QFile::remove( tempcachefile ) )
+    {
+      QgsDebugMsg( QString( "FAILED to delete temp token cache file: %1" ).arg( tempcachefile ) );
+      return;
+    }
+    if ( QFile::exists( localcachefile ) && !QFile::copy( localcachefile, tempcachefile ) )
+    {
+      QgsDebugMsg( QString( "FAILED to copy local to temp token cache file: %1 -> %2" ).arg( localcachefile, tempcachefile ) );
+      return;
+    }
+    if ( QFile::exists( localcachefile ) && !QFile::remove( localcachefile ) )
+    {
+      QgsDebugMsg( QString( "FAILED to delete temp token cache file after copy: %1" ).arg( localcachefile ) );
+      return;
+    }
+  }
 }
 
 // slot

@@ -40,6 +40,9 @@ class QgsO2: public O2
   private:
     void initOAuthConfig();
 
+    void setSettingsStore( bool persist = false );
+
+    QString mTokenCacheFile;
     QString mAuthcfg;
     QgsAuthOAuth2Config *mOAuth2Config;
 

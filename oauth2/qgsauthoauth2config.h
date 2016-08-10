@@ -216,6 +216,12 @@ class QgsAuthOAuth2Config : public QObject
     //!
     static QString accessMethodString( AccessMethod method );
 
+    //!
+    static QString tokenCacheDirectory( bool temporary = false );
+
+    //!
+    static QString tokenCacheFile( const QString &suffix = QString::null );
+
   public slots:
     void setId( const QString &value );
     void setVersion( int value );

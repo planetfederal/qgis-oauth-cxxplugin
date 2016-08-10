@@ -73,6 +73,8 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
 
     void loadFromOAuthConfig( const QgsAuthOAuth2Config *config = nullptr );
 
+    void updateTokenCacheFile( bool curpersist ) const;
+
     void tabIndexChanged( int indx );
 
     void definedCustomDirChanged( const QString &path );
@@ -82,7 +84,7 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
   private:
     void initGui();
 
-    QLineEdit * parentNameField();
+    QLineEdit * parentNameField() const;
 
     void initConfigObjs();
     void deleteConfigObjs();
@@ -104,6 +106,7 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
     QgsStringMap mConfigMap;
     bool mValid;
     int mCurTab;
+    bool mPrevPersistToken;
 };
 
 #endif // QGSAUTHOAUTH2EDIT_H

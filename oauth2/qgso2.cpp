@@ -20,6 +20,7 @@
 #include "qgsauthoauth2config.h"
 #include "qgslogger.h"
 
+#include <QDir>
 #include <QSettings>
 #include <QUrl>
 
@@ -27,6 +28,7 @@
 QgsO2::QgsO2( const QString &authcfg, QgsAuthOAuth2Config *oauth2config,
               QObject *parent , QNetworkAccessManager *manager )
     : O2( parent, manager )
+    , mTokenCacheFile( QString::null )
     , mAuthcfg( authcfg )
     , mOAuth2Config( oauth2config )
 {
@@ -37,7 +39,16 @@ QgsO2::~QgsO2()
 {
   // FIXME: This crashes app on QgsApplication destruction
   //        Verify that objects are acutally being deleted via QgsAuthManager's destruction
-//  mOAuth2Config->deleteLater();
+  //mOAuth2Config->deleteLater();
+
+  if ( mTokenCacheFile.startsWith( QgsAuthOAuth2Config::tokenCacheDirectory( true ) )
+       && QFile::exists( mTokenCacheFile ) )
+  {
+    if ( !QFile::remove( mTokenCacheFile ) )
+    {
+      QgsDebugMsg( QString( "Could not remove temp token cache file: %1" ).arg( mTokenCacheFile ) );
+    }
+  }
 }
 
 void QgsO2::initOAuthConfig()
@@ -90,14 +101,19 @@ void QgsO2::initOAuthConfig()
   }
   setGrantFlow( o2flow );
 
-  if ( mOAuth2Config->persistToken() )
-  {
-    QSettings* settings = new QSettings( QgsApplication::qgisSettingsDirPath() + "/oauth2-cache.ini",
-                                         QSettings::IniFormat );
-    O0SettingsStore *store = new O0SettingsStore( settings, O2_ENCRYPTION_KEY );
-    store->setGroupKey( QString( "authcfg_%1" ).arg( mAuthcfg ) );
-    setStore( store );
-  }
+  setSettingsStore( mOAuth2Config->persistToken() );
+}
+
+void QgsO2::setSettingsStore( bool persist )
+{
+  mTokenCacheFile = QString( "%1/%2" ).arg(
+                      QgsAuthOAuth2Config::tokenCacheDirectory( !persist ),
+                      QgsAuthOAuth2Config::tokenCacheFile( mAuthcfg ) );
+
+  QSettings* settings = new QSettings( mTokenCacheFile, QSettings::IniFormat );
+  O0SettingsStore *store = new O0SettingsStore( settings, O2_ENCRYPTION_KEY );
+  store->setGroupKey( QString( "authcfg_%1" ).arg( mAuthcfg ) );
+  setStore( store );
 }
 
 // slot

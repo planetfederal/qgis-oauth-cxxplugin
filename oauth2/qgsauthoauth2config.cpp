@@ -514,7 +514,7 @@ bool QgsAuthOAuth2Config::writeOAuth2Config(
   QFile config_file( filepath );
   QString file_path( config_file.fileName() );
 
-  if ( config_file.open( QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text) )
+  if ( config_file.open( QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text ) )
   {
     qint64 bytesWritten = config_file.write( configtxt );
     config_file.close();
@@ -790,4 +790,17 @@ QString QgsAuthOAuth2Config::accessMethodString( QgsAuthOAuth2Config::AccessMeth
     case QgsAuthOAuth2Config::Query:
       return tr( "URL Query" );
   }
+}
+
+// static
+QString QgsAuthOAuth2Config::tokenCacheDirectory( bool temporary )
+{
+  QDir setdir( QgsApplication::qgisSettingsDirPath() );
+  return  QString( "%1/oauth2-cache" ).arg( temporary ? QDir::tempPath() : setdir.canonicalPath() );
+}
+
+// static
+QString QgsAuthOAuth2Config::tokenCacheFile( const QString &suffix )
+{
+  return QString( "authcfg-%1.ini" ).arg( !suffix.isEmpty() ? suffix : "cache" );
 }

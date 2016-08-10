@@ -55,10 +55,37 @@ QgsAuthOAuth2Method::QgsAuthOAuth2Method()
                     << "wfs"  // convert to lowercase
                     << "wcs"
                     << "wms" );
+
+  QStringList cachedirpaths;
+  cachedirpaths << QgsAuthOAuth2Config::tokenCacheDirectory()
+  << QgsAuthOAuth2Config::tokenCacheDirectory( true );
+
+  Q_FOREACH ( const QString &cachedirpath, cachedirpaths )
+  {
+    QDir cachedir( cachedirpath );
+    if ( !cachedir.mkpath( cachedirpath ) )
+    {
+      QgsDebugMsg( QString( "FAILED to create cache dir: %1" ).arg( cachedirpath ) );
+    }
+  }
 }
 
 QgsAuthOAuth2Method::~QgsAuthOAuth2Method()
 {
+  QDir tempdir( QgsAuthOAuth2Config::tokenCacheDirectory( true ) );
+  QStringList dirlist = tempdir.entryList( QDir::Files | QDir::NoDotAndDotDot );
+  Q_FOREACH ( QString f, dirlist )
+  {
+    QString tempfile( tempdir.path() + "/" + f );
+    if ( !QFile::remove( tempfile ) )
+    {
+      QgsDebugMsg( QString( "FAILED to delete temp token cache file: %1" ).arg( tempfile ) );
+    }
+  }
+  if ( !tempdir.rmdir( tempdir.path() ) )
+  {
+    QgsDebugMsg( QString( "FAILED to delete temp token cache directory: %1" ).arg( tempdir.path() ) );
+  }
 }
 
 QString QgsAuthOAuth2Method::key() const
