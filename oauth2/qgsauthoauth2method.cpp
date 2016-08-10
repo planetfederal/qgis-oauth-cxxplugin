@@ -44,9 +44,6 @@ QMap<QString, QgsO2* > QgsAuthOAuth2Method::smOAuth2ConfigCache =
 
 QgsAuthOAuth2Method::QgsAuthOAuth2Method()
     : QgsAuthMethod()
-    , mLinkingAborted( false )
-    , mAbortTimer( 0 )
-    , mLocalEventLoop( 0 )
 {
   setVersion( 1 );
   setExpansions( QgsAuthMethod::NetworkRequest | QgsAuthMethod::NetworkReply );
@@ -137,8 +134,6 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     // clear any previous token session properties
     o2->unlink();
 
-    mLinkingAborted = false;
-
     connect( o2, SIGNAL( linkedChanged() ), this, SLOT( onLinkedChanged() ) );
     connect( o2, SIGNAL( linkingFailed() ), this, SLOT( onLinkingFailed() ) );
     connect( o2, SIGNAL( linkingSucceeded() ), this, SLOT( onLinkingSucceeded() ) );
@@ -152,30 +147,27 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     settings.setValue( timeoutkey, reqtimeout );
 
     // go into local event loop and wait for a fired linking-related slot
-    mLocalEventLoop = new QEventLoop( qApp );
-    mLocalEventLoop->connect( o2, SIGNAL( linkingFailed() ), SLOT( quit() ) );
-    mLocalEventLoop->connect( o2, SIGNAL( linkingSucceeded() ), SLOT( quit() ) );
+    QEventLoop loop( qApp );
+    loop.connect( o2, SIGNAL( linkingFailed() ), SLOT( quit() ) );
+    loop.connect( o2, SIGNAL( linkingSucceeded() ), SLOT( quit() ) );
 
-    // add singlshot timer to quit after an alloted timeout,
-    mAbortTimer = new QTimer( this );
-    mAbortTimer->setInterval( reqtimeout * 5 );
-    mAbortTimer->setSingleShot( true );
-    connect( mAbortTimer, SIGNAL( timeout() ), this, SLOT( linkingAborted() ), Qt::UniqueConnection );
-    mAbortTimer->start();
+    // add singlshot timer to quit linking after an alloted timeout
+    // this should keep the local event loop from blocking forever
+    QTimer timer( this );
+    timer.setInterval( reqtimeout * 5 );
+    timer.setSingleShot( true );
+    connect( &timer, SIGNAL( timeout() ), o2, SIGNAL( linkingFailed() ) );
+    timer.start();
 
     // asynchronously attempt the linking
     o2->link();
 
     // block request update until asynchronous linking loop is quit
-    mLocalEventLoop->exec();
-    if ( mAbortTimer->isActive() )
+    loop.exec();
+    if ( timer.isActive() )
     {
-      mAbortTimer->stop();
+      timer.stop();
     }
-    mAbortTimer->deleteLater();
-    mAbortTimer = nullptr;
-    mLocalEventLoop->deleteLater();
-    mLocalEventLoop = nullptr;
 
     // don't re-apply a setting that wasn't already set
     if ( prevtimeout == -1 )
@@ -185,13 +177,6 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     else
     {
       settings.setValue( timeoutkey, prevtimeout );
-    }
-
-    if ( mLinkingAborted )
-    {
-      QString msg = QString( "Update request FAILED for authcfg %1: linking aborted by timeout" ).arg( authcfg );
-      QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
-      return false;
     }
 
     if ( !o2->linked() )
@@ -269,25 +254,8 @@ bool QgsAuthOAuth2Method::updateNetworkReply( QNetworkReply *reply, const QStrin
   return true;
 }
 
-void QgsAuthOAuth2Method::linkingAborted()
-{
-  QgsDebugMsg( "Entered" );
-
-  if ( mLocalEventLoop )
-  {
-    mLocalEventLoop->quit();
-  }
-  //mLocalEventLoop->deleteLater();
-  mLinkingAborted = true;
-}
-
 void QgsAuthOAuth2Method::onLinkedChanged()
 {
-  if ( mLinkingAborted )
-  {
-    return;
-  }
-
   // Linking (login) state has changed.
   // Use o2->linked() to get the actual state
   QgsDebugMsg( "Link state changed" );
@@ -295,22 +263,12 @@ void QgsAuthOAuth2Method::onLinkedChanged()
 
 void QgsAuthOAuth2Method::onLinkingFailed()
 {
-  if ( mLinkingAborted )
-  {
-    return;
-  }
-
   // Login has failed
   QgsMessageLog::logMessage( "Login has failed", AUTH_METHOD_KEY );
 }
 
 void QgsAuthOAuth2Method::onLinkingSucceeded()
 {
-  if ( mLinkingAborted )
-  {
-    return;
-  }
-
   QgsO2 *o2 = qobject_cast<QgsO2 *>( sender() );
   if ( !o2 )
   {
@@ -348,11 +306,6 @@ void QgsAuthOAuth2Method::onLinkingSucceeded()
 
 void QgsAuthOAuth2Method::onOpenBrowser( const QUrl &url )
 {
-  if ( mLinkingAborted )
-  {
-    return;
-  }
-
   // Open a web browser or a web view with the given URL.
   // The user will interact with this browser window to
   // enter login name, password, and authorize your application
@@ -364,11 +317,6 @@ void QgsAuthOAuth2Method::onOpenBrowser( const QUrl &url )
 
 void QgsAuthOAuth2Method::onCloseBrowser()
 {
-  if ( mLinkingAborted )
-  {
-    return;
-  }
-
   // Close the browser window opened in openBrowser()
   QgsMessageLog::logMessage( "Close browser requested", AUTH_METHOD_KEY, QgsMessageLog::INFO );
 

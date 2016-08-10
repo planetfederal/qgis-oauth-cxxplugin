@@ -55,8 +55,6 @@ class QgsAuthOAuth2Method : public QgsAuthMethod
     void updateMethodConfig( QgsAuthMethodConfig &mconfig ) override;
 
   public slots:
-    void linkingAborted();
-
     void onLinkedChanged();
     void onLinkingFailed();
     void onLinkingSucceeded();
@@ -67,9 +65,6 @@ class QgsAuthOAuth2Method : public QgsAuthMethod
     void onNetworkError( QNetworkReply::NetworkError error );
 
   private:
-    bool mLinkingAborted;
-    QTimer *mAbortTimer;
-    QEventLoop *mLocalEventLoop;
     QString mTempStorePath;
 
     QgsO2* getOAuth2Bundle( const QString &authcfg, bool fullconfig = true );
