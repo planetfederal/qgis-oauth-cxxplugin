@@ -42,6 +42,8 @@ class QgsO2: public O2
 
     void setSettingsStore( bool persist = false );
 
+    void setVerficationResponseContent();
+
     QString mTokenCacheFile;
     QString mAuthcfg;
     QgsAuthOAuth2Config *mOAuth2Config;

@@ -102,6 +102,8 @@ void QgsO2::initOAuthConfig()
   setGrantFlow( o2flow );
 
   setSettingsStore( mOAuth2Config->persistToken() );
+
+  setVerficationResponseContent();
 }
 
 void QgsO2::setSettingsStore( bool persist )
@@ -114,6 +116,15 @@ void QgsO2::setSettingsStore( bool persist )
   O0SettingsStore *store = new O0SettingsStore( settings, O2_ENCRYPTION_KEY );
   store->setGroupKey( QString( "authcfg_%1" ).arg( mAuthcfg ) );
   setStore( store );
+}
+
+void QgsO2::setVerficationResponseContent()
+{
+  QFile verhtml( QgsApplication::pkgDataPath() + "/oauth2_verification_finished.html" );
+  if ( verhtml.open( QIODevice::ReadOnly | QIODevice::Text ) )
+  {
+    setReplyContent( verhtml.readAll() );
+  }
 }
 
 // slot
