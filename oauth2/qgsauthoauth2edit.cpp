@@ -79,7 +79,7 @@ void QgsAuthOAuth2Edit::initGui()
 
 QLineEdit *QgsAuthOAuth2Edit::parentNameField() const
 {
-  return parent() ? parent()->findChild<QLineEdit*>( "leName" ) : 0;
+  return window() ? window()->findChild<QLineEdit*>( "leName" ) : nullptr;
 }
 
 // slot
