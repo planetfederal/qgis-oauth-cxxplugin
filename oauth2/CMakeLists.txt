@@ -1,5 +1,20 @@
 # OAuth 2 Authentication Method plugin
 
+########################################################
+# Packages
+if(WITH_DESKTOP AND ENABLE_QT5)
+  #
+elseif(WITH_DESKTOP)
+  set(QT_USE_QTSCRIPT 1)
+  include(${QT_USE_FILE})
+endif()
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+find_package(QJSON REQUIRED)
+find_package(QCA REQUIRED)
+find_package(O2 REQUIRED)
+
 SET(OAUTH2_SRCS
   qgso2.cpp
   qgsauthoauth2config.cpp
@@ -31,9 +46,11 @@ SET(OAUTH2_RCCS  oauth2_resources.qrc)
 IF(WITH_DESKTOP)
   ### start: when in src/auth ###
   INCLUDE_DIRECTORIES (
-    ../../core
-    ../../core/auth
-    ../../core/geometry
+    ${CMAKE_SOURCE_DIR}/src/auth/oauth2
+    ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/core/auth
+    ${CMAKE_SOURCE_DIR}/src/core/geometry
+    ${CMAKE_CURRENT_SOURCE_DIR}
   )
   INCLUDE_DIRECTORIES (SYSTEM
     ${QCA_INCLUDE_DIR}
@@ -41,9 +58,10 @@ IF(WITH_DESKTOP)
     ${QJSON_INCLUDE_DIR}
   )
   INCLUDE_DIRECTORIES (
-    ../../gui
-    ../../gui/auth
+    ${CMAKE_SOURCE_DIR}/src/gui
+    ${CMAKE_SOURCE_DIR}/src/gui/auth
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_BINARY_DIR}/src/ui
   )
   ### end: when in src/auth ###
 ELSE(WITH_DESKTOP)
@@ -82,7 +100,8 @@ IF(WITH_DESKTOP)
   TARGET_LINK_LIBRARIES (oauth2authmethod
     qgis_core
     qgis_gui
-    ${O2_LIBRARY}
+    ${QT_QTSCRIPT_LIBRARY}
+    ${O2_LIBRARY_STATIC}
     ${QJSON_LIBRARIES}
   )
   ### end: when in src/auth ###
@@ -104,10 +123,9 @@ ELSE(WITH_DESKTOP)
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
+    ${QT_QTSCRIPT_LIBRARY}
     ${QT_QTSVG_LIBRARY}
-    ${QT_QTWEBKIT_LIBRARY}
-    ${QT_QTSQL_LIBRARY}
-    ${O2_LIBRARY}
+    ${O2_LIBRARY_STATIC}
     ${QJSON_LIBRARIES}
   )
   TARGET_LINK_LIBRARIES (oauth2authmethod

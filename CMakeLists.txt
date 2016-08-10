@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH
+  ${CMAKE_SOURCE_DIR}/cmake/modules
+  ${CMAKE_SOURCE_DIR}/oauth2/cmake
+  ${CMAKE_MODULE_PATH}
+)
 
 if(POLICY CMP0048) # in CMake >= 3.0.0
     cmake_policy(SET CMP0048 OLD) # keep project() from clearing VERSION variables
@@ -81,11 +85,9 @@ else()
   include(${QT_USE_FILE})
   message(STATUS "Found Qt version: ${QTVERSION}")
 
-  find_package(QJSON REQUIRED)
 endif()
 
 find_package(QCA REQUIRED)
-find_package(O2 REQUIRED)
 
 if(APPLE)
   #this will define ${APP_SERVICES_LIBRARY}
