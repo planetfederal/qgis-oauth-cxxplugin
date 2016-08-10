@@ -329,8 +329,8 @@ void QgsAuthOAuth2Method::onLinkingSucceeded()
   QgsMessageLog::logMessage( "Linking succeeded", AUTH_METHOD_KEY, QgsMessageLog::INFO );
 
   //###################### DO NOT LEAVE ME UNCOMMENTED ######################
-  QgsDebugMsg( QString( "Access token: %1" ).arg( o2->token() ) );
-  QgsDebugMsg( QString( "Access token secret: %1" ).arg( o2->tokenSecret() ) );
+  //QgsDebugMsg( QString( "Access token: %1" ).arg( o2->token() ) );
+  //QgsDebugMsg( QString( "Access token secret: %1" ).arg( o2->tokenSecret() ) );
   //###################### DO NOT LEAVE ME UNCOMMENTED ######################
 
   QVariantMap extraTokens = o2->extraTokens();

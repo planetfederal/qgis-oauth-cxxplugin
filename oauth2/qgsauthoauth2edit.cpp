@@ -388,7 +388,7 @@ void QgsAuthOAuth2Edit::updateTokenCacheFile( bool curpersist ) const
   }
   const QMetaObject* metaObject = window()->metaObject();
   QString parentclass = metaObject->className();
-  QgsDebugMsg( QString( "parent class: %1" ).arg( parentclass ) );
+  //QgsDebugMsg( QString( "parent class: %1" ).arg( parentclass ) );
   if ( parentclass != "QgsAuthConfigEdit" )
   {
     QgsDebugMsg( "Parent widget not QgsAuthConfigEdit instance" );
@@ -417,8 +417,8 @@ void QgsAuthOAuth2Edit::updateTokenCacheFile( bool curpersist ) const
                             QgsAuthOAuth2Config::tokenCacheDirectory( true ),
                             QgsAuthOAuth2Config::tokenCacheFile( authcfg ) );
 
-  QgsDebugMsg( QString( "localcachefile: %1" ).arg( localcachefile ) );
-  QgsDebugMsg( QString( "tempcachefile: %1" ).arg( tempcachefile ) );
+  //QgsDebugMsg( QString( "localcachefile: %1" ).arg( localcachefile ) );
+  //QgsDebugMsg( QString( "tempcachefile: %1" ).arg( tempcachefile ) );
 
   if ( curpersist )
   {
