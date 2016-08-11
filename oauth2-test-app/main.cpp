@@ -25,7 +25,7 @@ int main( int argc, char *argv[] )
   if ( QFile::exists( QString( QGIS_LOG_FILE ) ) )
   {
 #ifdef Q_OS_WIN
-    putenv( QString( "%1=%2" ).arg( "QGIS_LOG_FILE" ).arg( QGIS_LOG_FILE );
+    _putenv( QString( "%1=%2" ).arg( "QGIS_LOG_FILE", QGIS_LOG_FILE ).toUtf8().constData() );
 #else
     setenv( "QGIS_LOG_FILE", QGIS_LOG_FILE, 1 );
 #endif
@@ -50,7 +50,7 @@ int main( int argc, char *argv[] )
   if ( !qgis_prefix.isEmpty() && QFile::exists( qgis_prefix ) )
   {
 #ifdef Q_OS_WIN
-    putenv( QString( "%1=%2" ).arg( "QGIS_PREFIX_PATH" ).arg( qgis_prefix.toUtf8().constData() );
+    _putenv( QString( "%1=%2" ).arg( "QGIS_PREFIX_PATH", qgis_prefix.toUtf8().constData() ).toUtf8().constData() );
 #else
     setenv( "QGIS_PREFIX_PATH", qgis_prefix.toUtf8().constData(), 1 );
 #endif
