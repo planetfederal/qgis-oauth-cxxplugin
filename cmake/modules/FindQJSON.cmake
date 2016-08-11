@@ -26,6 +26,7 @@ else (QJSON_INCLUDE_DIR AND QJSON_LIBRARIES)
     NAMES qjson
     PATHS
     ${QJSON_LIBRARY_DIRS}
+    "$ENV{OSGEO4W_ROOT}/lib"
     /usr/local/lib
     /usr/lib
     "$ENV{LIB_DIR}/lib"
@@ -38,6 +39,7 @@ else (QJSON_INCLUDE_DIR AND QJSON_LIBRARIES)
     NAMES parser.h
     PATHS
     ${QJSON_INCLUDE_DIRS}
+    "$ENV{OSGEO4W_ROOT}/include"
     /usr/include
     /usr/local/include
     "$ENV{LIB_DIR}/include"

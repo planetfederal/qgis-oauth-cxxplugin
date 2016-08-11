@@ -49,6 +49,7 @@ IF(WIN32)
         "$ENV{INCLUDE}"
         "$ENV{LIB_DIR}/include/qgis"
         "$ENV{OSGEO4W_ROOT}/include"
+        "$ENV{OSGEO4W_ROOT}/apps/qgis/include"
         "$ENV{PROGRAMFILES}/QGIS/include"
     )
     FIND_LIBRARY(QGIS_CORE_LIBRARY
@@ -57,6 +58,7 @@ IF(WIN32)
         "$ENV{LIB_DIR}/lib/"
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/qgis/lib"
         "$ENV{PROGRAMFILES}/QGIS/lib"
     )
     FIND_LIBRARY(QGIS_GUI_LIBRARY
@@ -65,6 +67,7 @@ IF(WIN32)
         "$ENV{LIB_DIR}"
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/qgis/lib"
         "$ENV{PROGRAMFILES}/QGIS/lib"
     )
     FIND_LIBRARY(QGIS_ANALYSIS_LIBRARY
@@ -73,6 +76,7 @@ IF(WIN32)
         "$ENV{LIB_DIR}"
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/qgis/lib"
         "$ENV{PROGRAMFILES}/QGIS/lib"
     )
   ENDIF (MSVC)
