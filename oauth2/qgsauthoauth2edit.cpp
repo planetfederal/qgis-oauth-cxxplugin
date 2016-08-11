@@ -482,7 +482,7 @@ void QgsAuthOAuth2Edit::populateGrantFlows()
 void QgsAuthOAuth2Edit::definedCustomDirChanged( const QString &path )
 {
   QFileInfo pinfo( path );
-  bool ok = pinfo.exists() and pinfo.isDir();
+  bool ok = pinfo.exists() || pinfo.isDir();
 
   leDefinedDirPath->setStyleSheet( ok ? "" : QgsAuthGuiUtils::redTextStyleSheet() );
 

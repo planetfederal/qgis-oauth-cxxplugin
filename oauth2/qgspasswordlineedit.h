@@ -30,7 +30,7 @@ class QToolButton;
 /** \ingroup gui
  * Lineedit with password show toggle button
  **/
-class GUI_EXPORT QgsPasswordLineEdit : public QLineEdit
+class QgsPasswordLineEdit : public QLineEdit
 {
   Q_OBJECT
 

@@ -36,7 +36,7 @@
 
 inline QTextStream& qStdout()
 {
-  static QTextStream r {stdout};
+  static QTextStream r(stdout);
   return r;
 }
 
