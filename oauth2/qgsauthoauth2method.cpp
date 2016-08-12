@@ -129,16 +129,34 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
   if ( o2->linked() )
   {
-    // TODO: handle impending expiration of access token
+    // First, check if it is expired
+    bool expired = false;
+    if ( o2->expires() > 0 )  // QString("").toInt() result for tokens with no expiration
+    {
+      int cursecs = static_cast<int>( QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000 );
+      expired = (( o2->expires() - cursecs ) < 120 ); // try refresh with expired or two minutes to go
+    }
 
-    // if ( expires and refresh token and refresh token url ... )
+    if ( expired )
+    {
+      msg = QString( "Token expired, attempting refresh for authcfg %1" ).arg( authcfg );
+      QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
 
-    // else unlink the authenticator
+      // Try to get a refresh token first
+      // go into local event loop and wait for a fired refresh-related slot
+      QEventLoop rloop( qApp );
+      rloop.connect( o2, SIGNAL( refreshFinished( QNetworkReply::NetworkError ) ), SLOT( quit() ) );
 
-    // from O2::onTokenReplyFinished()...
-    //   qDebug() << "O2::onTokenReplyFinished: Token expires in" << expiresIn << "seconds";
-    //   setExpires(QDateTime::currentMSecsSinceEpoch() / 1000 + expiresIn);
-    int cursecs = static_cast<int>( QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000 );
+      // Asynchronously attempt the refresh
+      // TODO: This already has a timed reply setup in O2 base class (and in QgsNetworkAccessManager!)
+      //       May need to address this or app crashes will occur!
+      o2->refresh();
+
+      // block request update until asynchronous linking loop is quit
+      rloop.exec();
+
+      // refresh result should set o2 to (un)linked
+    }
   }
 
   if ( !o2->linked() )
@@ -147,11 +165,16 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     // clear any previous token session properties
     o2->unlink();
 
-    connect( o2, SIGNAL( linkedChanged() ), this, SLOT( onLinkedChanged() ) );
-    connect( o2, SIGNAL( linkingFailed() ), this, SLOT( onLinkingFailed() ) );
-    connect( o2, SIGNAL( linkingSucceeded() ), this, SLOT( onLinkingSucceeded() ) );
-    connect( o2, SIGNAL( openBrowser( QUrl ) ), this, SLOT( onOpenBrowser( QUrl ) ) );
-    connect( o2, SIGNAL( closeBrowser() ), this, SLOT( onCloseBrowser() ) );
+    connect( o2, SIGNAL( linkedChanged() ), this, SLOT( onLinkedChanged() ), Qt::UniqueConnection );
+    connect( o2, SIGNAL( linkingFailed() ), this, SLOT( onLinkingFailed() ), Qt::UniqueConnection );
+    connect( o2, SIGNAL( linkingSucceeded() ), this, SLOT( onLinkingSucceeded() ), Qt::UniqueConnection );
+    connect( o2, SIGNAL( openBrowser( QUrl ) ), this, SLOT( onOpenBrowser( QUrl ) ), Qt::UniqueConnection );
+    connect( o2, SIGNAL( closeBrowser() ), this, SLOT( onCloseBrowser() ), Qt::UniqueConnection );
+
+    //qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError") // for Qt::QueuedConnection, if needed;
+    connect( o2, SIGNAL( refreshFinished( QNetworkReply::NetworkError ) ),
+             this, SLOT( onRefreshFinished( QNetworkReply::NetworkError ) ), Qt::UniqueConnection );
+
 
     QSettings settings;
     QString timeoutkey( "/qgis/networkAndProxy/networkTimeout" );
@@ -254,14 +277,27 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
 bool QgsAuthOAuth2Method::updateNetworkReply( QNetworkReply *reply, const QString &authcfg, const QString &dataprovider )
 {
-  Q_UNUSED( reply )
-  Q_UNUSED( authcfg )
   Q_UNUSED( dataprovider )
 
   // TODO: handle token refresh error on the reply, see O2Requestor::onRequestError()
   // Is this doable if the errors are also handled in qgsapp (and/or elsewhere)?
   // Can we block as long as needed if the reply gets deleted elsewhere,
   // or will a local loop's connection keep it alive after a call to deletelater()?
+
+  if ( !reply )
+  {
+    QString msg = QString( "Updated reply with token refresh connection FAILED"
+                           " for authcfg %1: null reply object" ).arg( authcfg );
+    QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
+    return false;
+  }
+  reply->setProperty( "authcfg", authcfg );
+
+  connect( reply, SIGNAL( error( QNetworkReply::NetworkError ) ),
+           this, SLOT( onRequestError( QNetworkReply::NetworkError ) ), Qt::QueuedConnection );
+
+  QString msg = QString( "Updated reply with token refresh connection for authcfg: %1" ).arg( authcfg );
+  QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
 
   return true;
 }
@@ -356,14 +392,70 @@ void QgsAuthOAuth2Method::onReplyFinished()
                              AUTH_METHOD_KEY, QgsMessageLog::INFO );
 }
 
-void QgsAuthOAuth2Method::onNetworkError( QNetworkReply::NetworkError error )
+void QgsAuthOAuth2Method::onNetworkError( QNetworkReply::NetworkError err )
 {
-  Q_UNUSED( error );
+  QString msg;
+  QNetworkReply *reply = qobject_cast<QNetworkReply*>( sender() );
+  if ( !reply )
+  {
+    msg = QString( "Network error but no reply object accessible" );
+    QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
+    return;
+  }
+  if ( err != QNetworkReply::NoError )
+  {
+    msg = QString( "Network error: %1" ).arg( reply->errorString() );
+    QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
+  }
 
-  QgsMessageLog::logMessage( "Network error occurred", AUTH_METHOD_KEY, QgsMessageLog::WARNING );
-  QNetworkReply *reply = qobject_cast<QNetworkReply *>( sender() );
-  QgsMessageLog::logMessage( QString( "Error: %1" ).arg( reply->errorString() ),
-                             AUTH_METHOD_KEY, QgsMessageLog::WARNING );
+  // TODO: update debug messages to output to QGIS
+
+  int status = reply->attribute( QNetworkRequest::HttpStatusCodeAttribute ).toInt();
+  msg = QString( "Network error, HTTP status: %1" ).arg(
+          reply->attribute( QNetworkRequest::HttpReasonPhraseAttribute ).toString() );
+  QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
+
+  if ( status == 401 )
+  {
+    msg = QString( "Attempting token refresh..." );
+    QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
+
+    QString authcfg = reply->property( "authcfg" ).toString();
+    if ( authcfg.isEmpty() )
+    {
+      msg = QString( "Token refresh FAILED: authcfg empty" );
+      QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
+      return;
+    }
+
+    // get the cached authenticator
+    QgsO2 *o2 = getOAuth2Bundle( authcfg );
+
+    if ( o2 )
+    {
+      // Call O2::refresh. Note the O2 instance might live in a different thread from reply,
+      // so don't block here. User will just have to re-attempt connection
+      o2->refresh();
+
+      msg = QString( "Background token refresh underway for authcfg: %1" ).arg( authcfg );
+      QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
+    }
+    else
+    {
+      msg = QString( "Background token refresh FAILED for authcfg %1: could not get authenticator object" ).arg( authcfg );
+      QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
+    }
+  }
+}
+
+void QgsAuthOAuth2Method::onRefreshFinished( QNetworkReply::NetworkError err )
+{
+  QNetworkReply *reply = qobject_cast<QNetworkReply*>( sender() );
+  if ( err != QNetworkReply::NoError )
+  {
+    QgsMessageLog::logMessage( QString( "Token fefresh error: %1" ).arg( reply->errorString() ),
+                               AUTH_METHOD_KEY, QgsMessageLog::WARNING );
+  }
 }
 
 bool QgsAuthOAuth2Method::updateDataSourceUriItems( QStringList &connectionItems, const QString &authcfg,
