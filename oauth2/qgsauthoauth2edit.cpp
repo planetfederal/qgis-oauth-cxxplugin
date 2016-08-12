@@ -409,13 +409,9 @@ void QgsAuthOAuth2Edit::updateTokenCacheFile( bool curpersist ) const
     return;
   }
 
-  QString localcachefile = QString( "%1/%2" ).arg(
-                             QgsAuthOAuth2Config::tokenCacheDirectory(),
-                             QgsAuthOAuth2Config::tokenCacheFile( authcfg ) );
+  QString localcachefile = QgsAuthOAuth2Config::tokenCachePath( authcfg, false );
 
-  QString tempcachefile = QString( "%1/%2" ).arg(
-                            QgsAuthOAuth2Config::tokenCacheDirectory( true ),
-                            QgsAuthOAuth2Config::tokenCacheFile( authcfg ) );
+  QString tempcachefile = QgsAuthOAuth2Config::tokenCachePath( authcfg, true );
 
   //QgsDebugMsg( QString( "localcachefile: %1" ).arg( localcachefile ) );
   //QgsDebugMsg( QString( "tempcachefile: %1" ).arg( tempcachefile ) );

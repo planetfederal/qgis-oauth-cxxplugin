@@ -804,3 +804,10 @@ QString QgsAuthOAuth2Config::tokenCacheFile( const QString &suffix )
 {
   return QString( "authcfg-%1.ini" ).arg( !suffix.isEmpty() ? suffix : "cache" );
 }
+
+// static
+QString QgsAuthOAuth2Config::tokenCachePath( const QString &suffix, bool temporary )
+{
+  return QString( "%1/%2" ).arg( QgsAuthOAuth2Config::tokenCacheDirectory( temporary ),
+                                 QgsAuthOAuth2Config::tokenCacheFile( suffix ) );
+}

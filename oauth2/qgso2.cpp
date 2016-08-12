@@ -108,9 +108,7 @@ void QgsO2::initOAuthConfig()
 
 void QgsO2::setSettingsStore( bool persist )
 {
-  mTokenCacheFile = QString( "%1/%2" ).arg(
-                      QgsAuthOAuth2Config::tokenCacheDirectory( !persist ),
-                      QgsAuthOAuth2Config::tokenCacheFile( mAuthcfg ) );
+  mTokenCacheFile = QgsAuthOAuth2Config::tokenCachePath( mAuthcfg, !persist );
 
   QSettings* settings = new QSettings( mTokenCacheFile, QSettings::IniFormat );
   O0SettingsStore *store = new O0SettingsStore( settings, O2_ENCRYPTION_KEY );
