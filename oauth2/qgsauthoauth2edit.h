@@ -23,6 +23,8 @@
 #include "qgsauthoauth2config.h"
 
 
+class QgsAuthConfigEdit;
+
 class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edit
 {
     Q_OBJECT
@@ -46,6 +48,8 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
     void setupConnections();
 
     void configValidityChanged();
+
+    void removeTokenCacheFile();
 
     void populateGrantFlows();
     void updateGrantFlow( int indx );
@@ -84,10 +88,14 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
   private:
     void initGui();
 
+    QgsAuthConfigEdit* parentWidget() const;
     QLineEdit * parentNameField() const;
+    QString parentConfigId() const;
 
     void initConfigObjs();
     void deleteConfigObjs();
+
+    bool hasTokenCacheFile();
 
     void addQueryPairRow( const QString &key, const QString &val );
     QVariantMap queryPairs() const;
@@ -107,6 +115,7 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
     bool mValid;
     int mCurTab;
     bool mPrevPersistToken;
+    QToolButton *btnTokenClear;
 };
 
 #endif // QGSAUTHOAUTH2EDIT_H

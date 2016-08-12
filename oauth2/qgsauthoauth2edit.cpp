@@ -33,6 +33,7 @@ QgsAuthOAuth2Edit::QgsAuthOAuth2Edit( QWidget *parent )
     , mValid( 0 )
     , mCurTab( 0 )
     , mPrevPersistToken( false )
+    , btnTokenClear( 0 )
 {
   setupUi( this );
 
@@ -75,11 +76,49 @@ void QgsAuthOAuth2Edit::initGui()
 
   grpbxAdvanced->setCollapsed( true );
   grpbxAdvanced->setFlat( false );
+
+  btnTokenClear = new QToolButton( this );
+  btnTokenClear->setObjectName( "btnTokenClear" );
+  btnTokenClear->setMaximumHeight( 20 );
+  btnTokenClear->setText( tr( "Tokens" ) );
+  btnTokenClear->setToolTip( tr( "Remove cached tokens" ) );
+  btnTokenClear->setIcon( QIcon( ":/oauth2method/oauth2_resources/close.svg" ) );
+  btnTokenClear->setIconSize( QSize( 12, 12 ) );
+  btnTokenClear->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
+  btnTokenClear->setEnabled( hasTokenCacheFile() );
+
+  connect( btnTokenClear, SIGNAL( clicked() ), this, SLOT( removeTokenCacheFile() ) );
+  tabConfigs->setCornerWidget( btnTokenClear, Qt::TopRightCorner );
+}
+
+QgsAuthConfigEdit *QgsAuthOAuth2Edit::parentWidget() const
+{
+  const QMetaObject* metaObject = window()->metaObject();
+  QString parentclass = metaObject->className();
+  //QgsDebugMsg( QString( "parent class: %1" ).arg( parentclass ) );
+  if ( parentclass != "QgsAuthConfigEdit" )
+  {
+    QgsDebugMsg( "Parent widget not QgsAuthConfigEdit instance" );
+    return nullptr;
+  }
+
+  QgsAuthConfigEdit* parentwgdt = qobject_cast<QgsAuthConfigEdit*>( window() );
+  if ( !parentwgdt )
+  {
+    QgsDebugMsg( "Parent widget could not cast to QgsAuthConfigEdit" );
+    return nullptr;
+  }
+  return parentwgdt;
 }
 
 QLineEdit *QgsAuthOAuth2Edit::parentNameField() const
 {
-  return window() ? window()->findChild<QLineEdit*>( "leName" ) : nullptr;
+  return parentWidget() ? parentWidget()->findChild<QLineEdit*>( "leName" ) : nullptr;
+}
+
+QString QgsAuthOAuth2Edit::parentConfigId() const
+{
+  return parentWidget() ? parentWidget()->configId() : QString();
 }
 
 // slot
@@ -386,23 +425,8 @@ void QgsAuthOAuth2Edit::updateTokenCacheFile( bool curpersist ) const
     QgsDebugMsg( "Edit widget has no parent" );
     return;
   }
-  const QMetaObject* metaObject = window()->metaObject();
-  QString parentclass = metaObject->className();
-  //QgsDebugMsg( QString( "parent class: %1" ).arg( parentclass ) );
-  if ( parentclass != "QgsAuthConfigEdit" )
-  {
-    QgsDebugMsg( "Parent widget not QgsAuthConfigEdit instance" );
-    return;
-  }
 
-  QgsAuthConfigEdit* parentwgdt = qobject_cast<QgsAuthConfigEdit*>( window() );
-  if ( !parentwgdt )
-  {
-    QgsDebugMsg( "Parent FAILED to cast to QgsAuthConfigEdit" );
-    return;
-  }
-
-  QString authcfg = parentwgdt->configId();
+  QString authcfg = parentConfigId();
   if ( authcfg.isEmpty() )
   {
     QgsDebugMsg( "Auth config ID empty in ID widget of parent" );
@@ -562,6 +586,43 @@ void QgsAuthOAuth2Edit::deleteConfigObjs()
 {
   delete mOAuthConfigCustom;
   mOAuthConfigCustom = nullptr;
+}
+
+bool QgsAuthOAuth2Edit::hasTokenCacheFile()
+{
+  QString authcfg = parentConfigId();
+  if ( authcfg.isEmpty() )
+  {
+    QgsDebugMsg( "Auth config ID empty in ID widget of parent" );
+    return false;
+  }
+
+  return ( QFile::exists( QgsAuthOAuth2Config::tokenCachePath( authcfg, false ) )
+           || QFile::exists( QgsAuthOAuth2Config::tokenCachePath( authcfg, true ) ) );
+}
+
+//slot
+void QgsAuthOAuth2Edit::removeTokenCacheFile()
+{
+  QString authcfg = parentConfigId();
+  if ( authcfg.isEmpty() )
+  {
+    QgsDebugMsg( "Auth config ID empty in ID widget of parent" );
+    return;
+  }
+
+  QStringList cachefiles;
+  cachefiles << QgsAuthOAuth2Config::tokenCachePath( authcfg, false )
+  << QgsAuthOAuth2Config::tokenCachePath( authcfg, true );
+
+  Q_FOREACH ( const QString &cachefile, cachefiles )
+  {
+    if ( QFile::exists( cachefile ) && !QFile::remove( cachefile ) )
+    {
+      QgsDebugMsg( QString( "Remove token cache file FAILED for authcfg %1: %2" ).arg( authcfg, cachefile ) );
+    }
+  }
+  btnTokenClear->setEnabled( hasTokenCacheFile() );
 }
 
 // slot
