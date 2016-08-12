@@ -157,8 +157,8 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset resource="../oauth2-test-app/images/images.qrc">
-              <normaloff>:/images/themes/default/mActionFileOpen.svg</normaloff>:/images/themes/default/mActionFileOpen.svg</iconset>
+             <iconset resource="oauth2_resources.qrc">
+              <normaloff>:/oauth2method/oauth2_resources/fileopen.svg</normaloff>:/oauth2method/oauth2_resources/fileopen.svg</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -252,8 +252,8 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../oauth2-test-app/images/images.qrc">
-                 <normaloff>:/images/themes/default/mActionSharingExport.svg</normaloff>:/images/themes/default/mActionSharingExport.svg</iconset>
+                <iconset resource="oauth2_resources.qrc">
+                 <normaloff>:/oauth2method/oauth2_resources/export.svg</normaloff>:/oauth2method/oauth2_resources/export.svg</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -272,8 +272,8 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../oauth2-test-app/images/images.qrc">
-                 <normaloff>:/images/themes/default/mActionSharingImport.svg</normaloff>:/images/themes/default/mActionSharingImport.svg</iconset>
+                <iconset resource="oauth2_resources.qrc">
+                 <normaloff>:/oauth2method/oauth2_resources/import.svg</normaloff>:/oauth2method/oauth2_resources/import.svg</iconset>
                </property>
               </widget>
              </item>
@@ -936,7 +936,7 @@
   <tabstop>btnRemoveQueryPair</tabstop>
  </tabstops>
  <resources>
-  <include location="../oauth2-test-app/images/images.qrc"/>
+  <include location="oauth2_resources.qrc"/>
  </resources>
  <connections/>
 </ui>
