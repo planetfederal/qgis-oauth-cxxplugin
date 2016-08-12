@@ -105,12 +105,13 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 {
   Q_UNUSED( dataprovider )
 
+  QString msg;
+
   QgsO2* o2 = getOAuth2Bundle( authcfg );
   if ( !o2 )
   {
-    QString msg = QString( "Update request FAILED for authcfg %1: null object for requestor" ).arg( authcfg );
-    QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY );
-    QgsDebugMsg( msg );
+    msg = QString( "Update request FAILED for authcfg %1: null object for requestor" ).arg( authcfg );
+    QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
     return false;
   }
 
@@ -181,7 +182,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
     if ( !o2->linked() )
     {
-      QString msg = QString( "Update request FAILED for authcfg %1: requestor could not link app" ).arg( authcfg );
+      msg = QString( "Update request FAILED for authcfg %1: requestor could not link app" ).arg( authcfg );
       QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
       return false;
     }
@@ -189,7 +190,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
   if ( o2->token().isEmpty() )
   {
-    QString msg = QString( "Update request FAILED for authcfg %1: access token is empty" ).arg( authcfg );
+    msg = QString( "Update request FAILED for authcfg %1: access token is empty" ).arg( authcfg );
     QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
     return false;
   }
@@ -197,7 +198,6 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
   // update the request
   QgsAuthOAuth2Config::AccessMethod accessmethod = o2->oauth2config()->accessMethod();
 
-  QString msg;
   QUrl url = request.url();
 #if QT_VERSION >= 0x050000
   QUrlQuery query( url );
@@ -206,13 +206,13 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
   {
     case QgsAuthOAuth2Config::Header:
       request.setRawHeader( O2_HTTP_AUTHORIZATION_HEADER, QString( "Bearer %1" ).arg( o2->token() ).toAscii() );
-      msg += QString( "Updated request HEADER with access token for authcfg: %1" ).arg( authcfg );
+      msg = QString( "Updated request HEADER with access token for authcfg: %1" ).arg( authcfg );
       QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
       break;
     case QgsAuthOAuth2Config::Form:
       // FIXME: what to do here if the parent request is not POST?
       //        probably have to skip this until auth system support is moved into QgsNetworkAccessManager
-      msg += QString( "Update request FAILED for authcfg %1: form POST token update is unsupported" ).arg( authcfg );
+      msg = QString( "Update request FAILED for authcfg %1: form POST token update is unsupported" ).arg( authcfg );
       QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
       break;
     case QgsAuthOAuth2Config::Query:
@@ -227,11 +227,11 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
         url.setQuery( query );
 #endif
         request.setUrl( url );
-        msg += QString( "Updated request QUERY with access token for authcfg: %1" ).arg( authcfg );
+        msg = QString( "Updated request QUERY with access token for authcfg: %1" ).arg( authcfg );
       }
       else
       {
-        msg += QString( "Updated request QUERY with access token SKIPPED (existing token) for authcfg: %1" ).arg( authcfg );
+        msg = QString( "Updated request QUERY with access token SKIPPED (existing token) for authcfg: %1" ).arg( authcfg );
       }
       QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
       break;
@@ -264,7 +264,7 @@ void QgsAuthOAuth2Method::onLinkedChanged()
 void QgsAuthOAuth2Method::onLinkingFailed()
 {
   // Login has failed
-  QgsMessageLog::logMessage( "Login has failed", AUTH_METHOD_KEY );
+  QgsMessageLog::logMessage( "Authenticator linking (login) has failed", AUTH_METHOD_KEY, QgsMessageLog::WARNING );
 }
 
 void QgsAuthOAuth2Method::onLinkingSucceeded()
