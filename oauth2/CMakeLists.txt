@@ -87,7 +87,7 @@ QT4_WRAP_CPP(OAUTH2_MOC_SRCS ${OAUTH2_MOC_HDRS})
 
 QT4_ADD_RESOURCES(OAUTH2_RCC_SRCS ${OAUTH2_RCCS})
 
-ADD_LIBRARY (oauth2authmethod MODULE
+ADD_LIBRARY (oauth2authobj OBJECT
   ${OAUTH2_SRCS}
   ${OAUTH2_HDRS}
   ${OAUTH2_MOC_SRCS}
@@ -95,26 +95,21 @@ ADD_LIBRARY (oauth2authmethod MODULE
   ${OAUTH2_UIS_H}
 )
 
-IF(WITH_DESKTOP)
-  ### start: when in src/auth ###
-  TARGET_LINK_LIBRARIES (oauth2authmethod
+ADD_LIBRARY (oauth2authmethod MODULE $<TARGET_OBJECTS:oauth2authobj>)
+
+ADD_LIBRARY (oauth2authmethod_static STATIC $<TARGET_OBJECTS:oauth2authobj>)
+
+IF(QGIS_APP_NAME)
+  # in QGIS source tree
+  SET(OAUTH2_TARGET_LIBS
     qgis_core
     qgis_gui
     ${QT_QTSCRIPT_LIBRARY}
-    ${O2_LIBRARY_STATIC}
+    ${O2_LIBRARY}
     ${QJSON_LIBRARIES}
   )
-  ### end: when in src/auth ###
-ELSE(WITH_DESKTOP)
-  ### start: when standalone ###
-  ADD_LIBRARY (oauth2authmethod_static STATIC
-    ${OAUTH2_SRCS}
-    ${OAUTH2_HDRS}
-    ${OAUTH2_MOC_SRCS}
-    ${OAUTH2_RCC_SRCS}
-    ${OAUTH2_UIS_H}
-  )
-
+ELSE(QGIS_APP_NAME)
+  # outside QGIS source tree
   SET(OAUTH2_TARGET_LIBS
     ${QGIS_CORE_LIBRARY}
     ${QGIS_GUI_LIBRARY}
@@ -128,15 +123,16 @@ ELSE(WITH_DESKTOP)
     ${O2_LIBRARY}
     ${QJSON_LIBRARIES}
   )
-  TARGET_LINK_LIBRARIES (oauth2authmethod
-    ${OAUTH2_TARGET_LIBS}
-  )
-  TARGET_LINK_LIBRARIES (oauth2authmethod_static
-    ${OAUTH2_TARGET_LIBS}
-  )
-  ### end: when standalone ###
-ENDIF(WITH_DESKTOP)
+ENDIF(QGIS_APP_NAME)
 
+TARGET_LINK_LIBRARIES (oauth2authmethod
+  ${OAUTH2_TARGET_LIBS}
+)
+TARGET_LINK_LIBRARIES (oauth2authmethod_static
+  ${OAUTH2_TARGET_LIBS}
+)
+
+# don't install static variant, as it's only for unit testing from build directory
 INSTALL(TARGETS oauth2authmethod
   RUNTIME DESTINATION ${QGIS_PLUGIN_DIR}
   LIBRARY DESTINATION ${QGIS_PLUGIN_DIR}
