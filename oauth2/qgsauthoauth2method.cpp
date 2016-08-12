@@ -115,7 +115,18 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     return false;
   }
 
-  // if linked, use the available access token, unless a refresh is needed
+  if ( o2->linked() )
+  {
+    // Check if the cache file has been deleted outside core method routines
+    QString tokencache = QgsAuthOAuth2Config::tokenCachePath( authcfg, !o2->oauth2config()->persistToken() );
+    if ( !QFile::exists( tokencache ) )
+    {
+      msg = QString( "Token cache removed for authcfg %1: unlinking authenticator" ).arg( authcfg );
+      QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
+      o2->unlink();
+    }
+  }
+
   if ( o2->linked() )
   {
     // TODO: handle impending expiration of access token
@@ -129,7 +140,8 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     //   setExpires(QDateTime::currentMSecsSinceEpoch() / 1000 + expiresIn);
     int cursecs = static_cast<int>( QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000 );
   }
-  else
+
+  if ( !o2->linked() )
   {
     // link app
     // clear any previous token session properties
