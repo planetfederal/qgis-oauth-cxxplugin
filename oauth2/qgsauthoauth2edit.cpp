@@ -20,9 +20,8 @@
 
 #include "qgsauthguiutils.h"
 #include "qgsauthmanager.h"
-#include "qgslogger.h"
-
 #include "qgsauthconfigedit.h"
+#include "qgslogger.h"
 
 
 QgsAuthOAuth2Edit::QgsAuthOAuth2Edit( QWidget *parent )
@@ -91,8 +90,13 @@ void QgsAuthOAuth2Edit::initGui()
   tabConfigs->setCornerWidget( btnTokenClear, Qt::TopRightCorner );
 }
 
-QgsAuthConfigEdit *QgsAuthOAuth2Edit::parentWidget() const
+QWidget *QgsAuthOAuth2Edit::parentWidget() const
 {
+  if ( !window() )
+  {
+    return nullptr;
+  }
+
   const QMetaObject* metaObject = window()->metaObject();
   QString parentclass = metaObject->className();
   //QgsDebugMsg( QString( "parent class: %1" ).arg( parentclass ) );
@@ -102,13 +106,7 @@ QgsAuthConfigEdit *QgsAuthOAuth2Edit::parentWidget() const
     return nullptr;
   }
 
-  QgsAuthConfigEdit* parentwgdt = qobject_cast<QgsAuthConfigEdit*>( window() );
-  if ( !parentwgdt )
-  {
-    QgsDebugMsg( "Parent widget could not cast to QgsAuthConfigEdit" );
-    return nullptr;
-  }
-  return parentwgdt;
+  return window();
 }
 
 QLineEdit *QgsAuthOAuth2Edit::parentNameField() const
@@ -118,7 +116,24 @@ QLineEdit *QgsAuthOAuth2Edit::parentNameField() const
 
 QString QgsAuthOAuth2Edit::parentConfigId() const
 {
-  return parentWidget() ? parentWidget()->configId() : QString();
+  if ( !parentWidget() )
+  {
+    return QString();
+  }
+
+  QgsAuthConfigEdit *cie = qobject_cast<QgsAuthConfigEdit*>( parentWidget() );
+  if ( !cie )
+  {
+    QgsDebugMsg( "Could not cast to QgsAuthConfigEdit" );
+    return QString();
+  }
+
+  if ( cie->configId().isEmpty() )
+  {
+    QgsDebugMsg( "QgsAuthConfigEdit->configId() is empty" );
+  }
+
+  return cie->configId();
 }
 
 // slot

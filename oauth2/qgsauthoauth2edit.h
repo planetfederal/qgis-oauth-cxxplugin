@@ -23,8 +23,6 @@
 #include "qgsauthoauth2config.h"
 
 
-class QgsAuthConfigEdit;
-
 class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edit
 {
     Q_OBJECT
@@ -88,7 +86,7 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
   private:
     void initGui();
 
-    QgsAuthConfigEdit* parentWidget() const;
+    QWidget* parentWidget() const;
     QLineEdit * parentNameField() const;
     QString parentConfigId() const;
 
