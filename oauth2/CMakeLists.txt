@@ -46,10 +46,12 @@ SET(OAUTH2_RCCS  oauth2_resources.qrc)
 IF(WITH_DESKTOP)
   ### start: when in src/auth ###
   INCLUDE_DIRECTORIES (
-    ${CMAKE_SOURCE_DIR}/src/auth/oauth2
     ${CMAKE_SOURCE_DIR}/src/core
     ${CMAKE_SOURCE_DIR}/src/core/auth
     ${CMAKE_SOURCE_DIR}/src/core/geometry
+    ${CMAKE_SOURCE_DIR}/src/auth/oauth2
+    ${CMAKE_SOURCE_DIR}/src/gui
+    ${CMAKE_SOURCE_DIR}/src/gui/auth
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
   INCLUDE_DIRECTORIES (SYSTEM
@@ -58,10 +60,10 @@ IF(WITH_DESKTOP)
     ${QJSON_INCLUDE_DIR}
   )
   INCLUDE_DIRECTORIES (
-    ${CMAKE_SOURCE_DIR}/src/gui
-    ${CMAKE_SOURCE_DIR}/src/gui/auth
-    ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/src/ui
+    ${CMAKE_BINARY_DIR}/src/ui/auth
+    ${CMAKE_BINARY_DIR}/src/auth/oauth2
+    ${CMAKE_CURRENT_BINARY_DIR}
   )
   ### end: when in src/auth ###
 ELSE(WITH_DESKTOP)
