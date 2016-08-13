@@ -87,7 +87,7 @@ QT4_WRAP_CPP(OAUTH2_MOC_SRCS ${OAUTH2_MOC_HDRS})
 
 QT4_ADD_RESOURCES(OAUTH2_RCC_SRCS ${OAUTH2_RCCS})
 
-ADD_LIBRARY (oauth2authobj OBJECT
+ADD_LIBRARY (oauth2authmethod MODULE
   ${OAUTH2_SRCS}
   ${OAUTH2_HDRS}
   ${OAUTH2_MOC_SRCS}
@@ -95,9 +95,13 @@ ADD_LIBRARY (oauth2authobj OBJECT
   ${OAUTH2_UIS_H}
 )
 
-ADD_LIBRARY (oauth2authmethod MODULE $<TARGET_OBJECTS:oauth2authobj>)
-
-ADD_LIBRARY (oauth2authmethod_static STATIC $<TARGET_OBJECTS:oauth2authobj>)
+ADD_LIBRARY (oauth2authmethod_static STATIC
+  ${OAUTH2_SRCS}
+  ${OAUTH2_HDRS}
+  ${OAUTH2_MOC_SRCS}
+  ${OAUTH2_RCC_SRCS}
+  ${OAUTH2_UIS_H}
+)
 
 IF(WITH_DESKTOP)
   # in QGIS source tree
