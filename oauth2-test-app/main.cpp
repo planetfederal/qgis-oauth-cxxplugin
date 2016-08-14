@@ -1,8 +1,16 @@
+#ifdef _MSC_VER
+#undef APP_EXPORT
+#define APP_EXPORT __declspec(dllimport)
+#endif
+
 #include <QApplication>
 #include <QFile>
 #include <QDialog>
 #include <QIcon>
 #include <QLibraryInfo>
+#if QT_VERSION < 0x050000
+#include <QPlastiqueStyle>
+#endif
 #include <QSettings>
 #include <QTranslator>
 
@@ -19,8 +27,38 @@
 #include "qgsmaplayerregistry.h"
 #include "qgsproviderregistry.h"
 
+#include <cstdio>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
+#ifdef WIN32
+// Open files in binary mode
+#include <fcntl.h> /*  _O_BINARY */
+#include <windows.h>
+#include <dbghelp.h>
+#include <time.h>
+#ifdef MSVC
+#undef _fmode
+int _fmode = _O_BINARY;
+#else
+// Only do this if we are not building on windows with msvc.
+// Recommended method for doing this with msvc is with a call to _set_fmode
+// which is the first thing we do in main().
+// Similarly, with MinGW set _fmode in main().
+#endif  //_MSC_VER
+#else
+#include <getopt.h>
+#endif
+
 int main( int argc, char *argv[] )
 {
+#ifdef WIN32  // Windows
+#ifdef _MSC_VER
+  _set_fmode( _O_BINARY );
+#endif  // _MSC_VER
+#endif  // WIN32
+
 #ifdef QGIS_LOG_FILE
   if ( QFile::exists( QString( QGIS_LOG_FILE ) ) )
   {
@@ -67,6 +105,14 @@ int main( int argc, char *argv[] )
 //  QCoreApplication::addLibraryPath( QString( EXTRA_QGIS_PLUGIN_DIR ) );
 
 //  QgsApplication::setPrefixPath( qgis_prefix, true );
+
+#ifdef Q_OS_WIN
+#if QT_VERSION < 0x050000
+  QApplication::setStyle( new QPlastiqueStyle );
+#endif
+  QCoreApplication::addLibraryPath( QApplication::applicationDirPath()
+                                    + QDir::separator() + "qtplugins" );
+#endif
 
   QgsDebugMsg( QgsApplication::showSettings() );
 
