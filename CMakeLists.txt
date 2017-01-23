@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 set(CMAKE_MODULE_PATH
   ${CMAKE_SOURCE_DIR}/cmake/modules
@@ -37,8 +37,7 @@ ENDIF()
 
 option(ENABLE_TESTS "Enable building of unit tests" ON)
 
-option(BUILD_TEST_APP "Build test app" ON)
-set(QGIS_PREFIX_PATH "" CACHE STRING "QGIS application install prefix")
+option(BUILD_TEST_APP "Build test app" OFF)
 
 # Qt find routines from QGIS 2.14.3 code base
 set(QT_MIN_VERSION 4.8.0)
@@ -90,6 +89,8 @@ endif()
 find_package(QCA REQUIRED)
 
 if(APPLE)
+  set(QGIS_PREFIX_PATH "/Applications" CACHE STRING "macOS QGIS application install prefix")
+
   #this will define ${APP_SERVICES_LIBRARY}
   find_library(APP_SERVICES_LIBRARY ApplicationServices )
   if(EXISTS "${QGIS_PREFIX_PATH}/CMakeCache.txt")
@@ -103,11 +104,16 @@ if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-error=c++11-narrowing -Wno-return-type-c-linkage")
   endif ()
 elseif(MSVC)
-  set(OSGEO4W_ROOT "C:/PROGRA~1/Boundless/Desktop/osgeo4w")
-  set(OSGEO4W_ROOT "Z:/OSGeo4W64")
+  # or C:/PROGRA~1/Boundless/Desktop/osgeo4w
+  set(OSGEO4W_ROOT_DIR "C:/OSGeo4W64" CACHE STRING "OSGeo4W root install prefix")
+  set(ENV{OSGEO4W_ROOT} $OSGEO4W_ROOT_DIR)
 endif()
 
 find_package(QGIS REQUIRED)
+
+if(NOT QGIS_PLUGIN_DIR)
+  message(WARNING "Couldn't find QGIS_PLUGIN_DIR; install may fail")
+endif()
 
 if(WIN32)
   set(DLLIMPORT "__declspec(dllimport)")
@@ -130,5 +136,5 @@ if(BUILD_TEST_APP)
 endif()
 
 if (ENABLE_TESTS)
-  add_subdirectory(tests)
+  add_subdirectory(test)
 endif()

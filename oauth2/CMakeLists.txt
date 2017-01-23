@@ -15,6 +15,9 @@ find_package(QJSON REQUIRED)
 find_package(QCA REQUIRED)
 find_package(O2 REQUIRED)
 
+########################################################
+# Files
+
 SET(OAUTH2_SRCS
   qgso2.cpp
   qgsauthoauth2config.cpp
