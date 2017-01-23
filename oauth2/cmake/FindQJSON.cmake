@@ -36,7 +36,7 @@ else (QJSON_INCLUDE_DIR AND QJSON_LIBRARIES)
   )
 
   find_path (QJSON_INCLUDE_DIR
-    NAMES parser.h
+    NAMES qjson/parser.h
     PATHS
     ${QJSON_INCLUDE_DIRS}
     "$ENV{OSGEO4W_ROOT}/include"
@@ -46,7 +46,6 @@ else (QJSON_INCLUDE_DIR AND QJSON_LIBRARIES)
     $ENV{INCLUDE}
     ${INCLUDE_INSTALL_DIR}
     ${KDE4_INCLUDE_DIR}
-    PATH_SUFFIXES qjson
   )
 
   include(FindPackageHandleStandardArgs)
