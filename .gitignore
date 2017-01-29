@@ -1,4 +1,4 @@
-scripts
+build*/
 *.prepare
 astyle.*.diff
 sha-*.diff
