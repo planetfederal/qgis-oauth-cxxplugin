@@ -23,7 +23,7 @@ else (QJSON_INCLUDE_DIR AND QJSON_LIBRARIES)
 #  endif (NOT WIN32)
 
   find_library (QJSON_LIBRARIES
-    NAMES qjson-qt5 qjson
+    NAMES qjson qjson-qt5
     PATHS
     ${QJSON_LIBRARY_DIRS}
     "$ENV{OSGEO4W_ROOT}/lib"

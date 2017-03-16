@@ -2,15 +2,13 @@
 
 ########################################################
 # Packages
-if(ENABLE_QT5)
-  #
-else()
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+if(NOT ENABLE_QT5)
   set(QT_USE_QTSCRIPT 1)
   include(${QT_USE_FILE})
   find_package(QJSON REQUIRED)
 endif()
-
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 find_package(QCA REQUIRED)
 find_package(O2 REQUIRED)
@@ -22,7 +20,6 @@ SET(OAUTH2_SRCS
   qgso2.cpp
   qgsauthoauth2config.cpp
   qgsauthoauth2method.cpp
-  qgspasswordlineedit.cpp
   qgsauthoauth2edit.cpp
   qjsonwrapper/Json.cpp
 )
@@ -31,7 +28,6 @@ SET(OAUTH2_HDRS
   qgso2.h
   qgsauthoauth2config.h
   qgsauthoauth2method.h
-  qgspasswordlineedit.h
   qgsauthoauth2edit.h
   qjsonwrapper/Json.h
 )
@@ -40,13 +36,35 @@ SET(OAUTH2_MOC_HDRS
   qgso2.h
   qgsauthoauth2config.h
   qgsauthoauth2method.h
-  qgspasswordlineedit.h
   qgsauthoauth2edit.h
 )
+
+IF(NOT ENABLE_QT5)
+  # QgsPasswordLineEdit is in QGIS 2.99 at 85776a1
+  SET(OAUTH2_SRCS ${OAUTH2_SRCS} qgspasswordlineedit.cpp)
+  SET(OAUTH2_HDRS ${OAUTH2_HDRS} qgspasswordlineedit.h)
+  SET(OAUTH2_MOC_HDRS ${OAUTH2_MOC_HDRS} qgspasswordlineedit.h)
+ENDIF(NOT ENABLE_QT5)
 
 SET(OAUTH2_UIS qgsauthoauth2edit.ui)
 
 SET(OAUTH2_RCCS  oauth2_resources.qrc)
+
+# Shared includes
+INCLUDE_DIRECTORIES (
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+INCLUDE_DIRECTORIES (SYSTEM
+  ${QCA_INCLUDE_DIR}
+  ${O2_INCLUDE_DIR}
+)
+if(NOT ENABLE_QT5)
+  INCLUDE_DIRECTORIES (SYSTEM
+    ${QJSON_INCLUDE_DIR}
+  )
+endif()
+
 
 IF(WITH_DESKTOP)
   ### start: when in src/auth ###
@@ -57,18 +75,9 @@ IF(WITH_DESKTOP)
     ${CMAKE_SOURCE_DIR}/src/auth/oauth2
     ${CMAKE_SOURCE_DIR}/src/gui
     ${CMAKE_SOURCE_DIR}/src/gui/auth
-    ${CMAKE_CURRENT_SOURCE_DIR}
-  )
-  INCLUDE_DIRECTORIES (SYSTEM
-    ${QCA_INCLUDE_DIR}
-    ${O2_INCLUDE_DIR}
-    ${QJSON_INCLUDE_DIR}
-  )
-  INCLUDE_DIRECTORIES (
     ${CMAKE_BINARY_DIR}/src/ui
     ${CMAKE_BINARY_DIR}/src/ui/auth
     ${CMAKE_BINARY_DIR}/src/auth/oauth2
-    ${CMAKE_CURRENT_BINARY_DIR}
   )
   ### end: when in src/auth ###
 ELSE(WITH_DESKTOP)
@@ -77,13 +86,6 @@ ELSE(WITH_DESKTOP)
     ${Qt5Sql_INCLUDE_DIRS}
     ${QT_INCLUDE_DIR}
     ${QGIS_INCLUDE_DIR}
-    ${QCA_INCLUDE_DIR}
-    ${QJSON_INCLUDE_DIR}
-  )
-  INCLUDE_DIRECTORIES (
-    ${O2_INCLUDE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
   )
   ### end: when standalone ###
 ENDIF(WITH_DESKTOP)
@@ -103,6 +105,7 @@ ADD_LIBRARY (oauth2authmethod MODULE
   ${OAUTH2_UIS_H}
 )
 
+# For unit testing
 ADD_LIBRARY (oauth2authmethod_static STATIC
   ${OAUTH2_SRCS}
   ${OAUTH2_HDRS}
@@ -111,14 +114,25 @@ ADD_LIBRARY (oauth2authmethod_static STATIC
   ${OAUTH2_UIS_H}
 )
 
+# Shared linked libs
+SET(OAUTH2_TARGET_LIBS
+  ${O2_LIBRARY}
+)
+
+if(NOT ENABLE_QT5)
+  SET(OAUTH2_TARGET_LIBS
+    ${QT_QTSCRIPT_LIBRARY}
+    ${QJSON_LIBRARIES}
+    ${OAUTH2_TARGET_LIBS}
+  )
+endif()
+
 IF(WITH_DESKTOP)
   # in QGIS source tree
   SET(OAUTH2_TARGET_LIBS
     qgis_core
     qgis_gui
-    ${QT_QTSCRIPT_LIBRARY}
-    ${O2_LIBRARY}
-    ${QJSON_LIBRARIES}
+    ${OAUTH2_TARGET_LIBS}
   )
 ELSE(WITH_DESKTOP)
   # outside QGIS source tree
@@ -130,10 +144,8 @@ ELSE(WITH_DESKTOP)
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
-    ${QT_QTSCRIPT_LIBRARY}
     ${QT_QTSVG_LIBRARY}
-    ${O2_LIBRARY}
-    ${QJSON_LIBRARIES}
+    ${OAUTH2_TARGET_LIBS}
   )
 ENDIF(WITH_DESKTOP)
 
