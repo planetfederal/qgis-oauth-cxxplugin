@@ -7,11 +7,30 @@
 ## QGIS_ANALYSIS_LIBRARY = full path to the ANALYSIS library
 ## QGIS_PLUGIN_DIR       = full path to where QGIS plugins are installed
 ## QGIS_INCLUDE_DIR      = where to find headers
+## QGIS_UI_INCLUDE_DIR   = where to find ui_* generated headers
+##
+## Definitions or ENV variables affecting search locations
+##
+## OSGEO4W_ROOT          = [A-Z]:/path/to/OSGeo4W/install/root
+##                               (^ use forward slashes!)
+## OSGEO4W_QGIS_SUBDIR   = qgis[-rel|-ltr][-dev], in OSGEO4W_ROOT/apps/
+## QGIS_MAC_PATH         = /path/to/any/QGIS.app/Contents
+## QGIS_BUILD_PATH       = [A-Z:]/path/to/QGIS/build/directory
 ##
 ## Tim Sutton
+## Larry Shaffer (2017-01-31)
 
 #MESSAGE("Searching for QGIS")
 IF(WIN32)
+  # OSGEO4W_QGIS_SUBDIR relative install: qgis[-rel|-ltr][-dev], etc.
+  IF (NOT OSGEO4W_QGIS_SUBDIR OR "${OSGEO4W_QGIS_SUBDIR}" STREQUAL "")
+    IF (NOT "$ENV{OSGEO4W_QGIS_SUBDIR}" STREQUAL "")
+      SET (OSGEO4W_QGIS_SUBDIR $ENV{OSGEO4W_QGIS_SUBDIR})
+    ELSE ()
+      SET (OSGEO4W_QGIS_SUBDIR qgis)
+    ENDIF ()
+  ENDIF ()
+
   #MESSAGE("Searching for QGIS in $ENV{PROGRAMFILES}/QGIS")
   IF (MINGW)
     FIND_PATH(QGIS_PLUGIN_DIR
@@ -40,7 +59,7 @@ IF(WIN32)
     FIND_PATH(QGIS_PLUGIN_DIR
       NAMES spatialqueryplugin.dll
       PATHS
-        "$ENV{OSGEO4W_ROOT}/apps/qgis/plugins"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/plugins"
         "$ENV{PROGRAMFILES}/QGIS/plugins"
     )
     FIND_PATH(QGIS_INCLUDE_DIR
@@ -49,7 +68,7 @@ IF(WIN32)
         "$ENV{INCLUDE}"
         "$ENV{LIB_DIR}/include/qgis"
         "$ENV{OSGEO4W_ROOT}/include"
-        "$ENV{OSGEO4W_ROOT}/apps/qgis/include"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/include"
         "$ENV{PROGRAMFILES}/QGIS/include"
     )
     FIND_LIBRARY(QGIS_CORE_LIBRARY
@@ -58,7 +77,7 @@ IF(WIN32)
         "$ENV{LIB_DIR}/lib/"
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
-        "$ENV{OSGEO4W_ROOT}/apps/qgis/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
         "$ENV{PROGRAMFILES}/QGIS/lib"
     )
     FIND_LIBRARY(QGIS_GUI_LIBRARY
@@ -67,7 +86,7 @@ IF(WIN32)
         "$ENV{LIB_DIR}"
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
-        "$ENV{OSGEO4W_ROOT}/apps/qgis/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
         "$ENV{PROGRAMFILES}/QGIS/lib"
     )
     FIND_LIBRARY(QGIS_ANALYSIS_LIBRARY
@@ -76,16 +95,12 @@ IF(WIN32)
         "$ENV{LIB_DIR}"
         "$ENV{LIB}"
         "$ENV{OSGEO4W_ROOT}/lib"
-        "$ENV{OSGEO4W_ROOT}/apps/qgis/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
         "$ENV{PROGRAMFILES}/QGIS/lib"
     )
   ENDIF (MSVC)
 ELSE(WIN32)
   IF(UNIX)
-    # try to use bundle on mac
-    IF (NOT QGIS_MAC_PATH)
-      SET (QGIS_MAC_PATH /Applications/QGIS.app/Contents)
-    ENDIF (NOT QGIS_MAC_PATH)
     #MESSAGE("Searching for QGIS in /usr/bin; /usr/local/bin")
     FIND_PATH(QGIS_PLUGIN_DIR
       NAMES libspatialqueryplugin.so
@@ -94,6 +109,7 @@ ELSE(WIN32)
         ${QGIS_MAC_PATH}/PlugIns/qgis
         ${QGIS_PREFIX_PATH}/lib/qgis/plugins/
         /usr/lib64/qgis/plugins
+        /usr/lib/qgis
         /usr/lib/qgis/plugins
         /usr/local/lib/qgis/plugins
         "$ENV{LIB_DIR}/lib/qgis/plugins"
@@ -159,7 +175,6 @@ ELSE(WIN32)
         /usr/local/lib
         /Library/Frameworks
         "$ENV{LIB_DIR}/lib/"
-        PATH_SUFFIXES qgis-dev
     )
     FIND_LIBRARY(QGIS_GUI_LIBRARY
       NAMES qgis_gui
@@ -173,7 +188,6 @@ ELSE(WIN32)
         /usr/local/lib
         /Library/Frameworks
         "$ENV{LIB_DIR}/lib/"
-        PATH_SUFFIXES qgis-dev
     )
     FIND_LIBRARY(QGIS_ANALYSIS_LIBRARY
       NAMES qgis_analysis
@@ -187,7 +201,6 @@ ELSE(WIN32)
         /usr/local/lib
         /Library/Frameworks
         "$ENV{LIB_DIR}/lib/"
-        PATH_SUFFIXES qgis-dev
     )
   ENDIF(UNIX)
 ENDIF(WIN32)
