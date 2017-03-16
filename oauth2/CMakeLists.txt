@@ -7,11 +7,11 @@ if(WITH_DESKTOP AND ENABLE_QT5)
 elseif(WITH_DESKTOP)
   set(QT_USE_QTSCRIPT 1)
   include(${QT_USE_FILE})
+  find_package(QJSON REQUIRED)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-find_package(QJSON REQUIRED)
 find_package(QCA REQUIRED)
 find_package(O2 REQUIRED)
 
@@ -24,6 +24,7 @@ SET(OAUTH2_SRCS
   qgsauthoauth2method.cpp
   qgspasswordlineedit.cpp
   qgsauthoauth2edit.cpp
+  qjsonwrapper/Json.cpp
 )
 
 SET(OAUTH2_HDRS
@@ -32,6 +33,7 @@ SET(OAUTH2_HDRS
   qgsauthoauth2method.h
   qgspasswordlineedit.h
   qgsauthoauth2edit.h
+  qjsonwrapper/Json.h
 )
 
 SET(OAUTH2_MOC_HDRS
@@ -72,6 +74,7 @@ IF(WITH_DESKTOP)
 ELSE(WITH_DESKTOP)
   ### start: when standalone ###
   INCLUDE_DIRECTORIES (SYSTEM
+    ${Qt5Sql_INCLUDE_DIRS}
     ${QT_INCLUDE_DIR}
     ${QGIS_INCLUDE_DIR}
     ${QCA_INCLUDE_DIR}
