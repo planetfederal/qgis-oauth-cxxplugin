@@ -22,6 +22,7 @@
 
 #include "qgis.h"
 
+
 class QgsAuthOAuth2Config : public QObject
 {
     Q_OBJECT
@@ -57,7 +58,7 @@ class QgsAuthOAuth2Config : public QObject
       Query,
     };
 
-    explicit QgsAuthOAuth2Config( QObject *parent = 0 );
+    explicit QgsAuthOAuth2Config( QObject *parent = nullptr );
 
     ~QgsAuthOAuth2Config();
 
@@ -175,7 +176,7 @@ class QgsAuthOAuth2Config : public QObject
 
     //!
     static QVariantMap variantFromSerialized( const QByteArray &serial,
-        ConfigFormat format = JSON ,
+        ConfigFormat format = JSON,
         bool *ok = nullptr );
 
     //! Write config object out to a formatted file (e.g. JSON)
@@ -185,7 +186,7 @@ class QgsAuthOAuth2Config : public QObject
                                    bool pretty = false );
 
     //! Load and parse a directory of configs (e.g. JSON) to objects
-    static QList<QgsAuthOAuth2Config*> loadOAuth2Configs(
+    static QList<QgsAuthOAuth2Config *> loadOAuth2Configs(
       const QString &configdirectory,
       QObject *parent = nullptr,
       ConfigFormat format = JSON,
@@ -257,30 +258,30 @@ class QgsAuthOAuth2Config : public QObject
 
   signals:
     void configChanged();
-    void idChanged( const QString& );
+    void idChanged( const QString & );
     void versionChanged( int );
     void configTypeChanged( ConfigType );
     void grantFlowChanged( GrantFlow );
-    void nameChanged( const QString& );
-    void descriptionChanged( const QString& );
-    void requestUrlChanged( const QString& );
-    void tokenUrlChanged( const QString& );
-    void refreshTokenUrlChanged( const QString& );
-    void redirectUrlChanged( const QString& );
+    void nameChanged( const QString & );
+    void descriptionChanged( const QString & );
+    void requestUrlChanged( const QString & );
+    void tokenUrlChanged( const QString & );
+    void refreshTokenUrlChanged( const QString & );
+    void redirectUrlChanged( const QString & );
     void redirectPortChanged( int );
-    void clientIdChanged( const QString& );
-    void clientSecretChanged( const QString& );
-    void usernameChanged( const QString& );
-    void passwordChanged( const QString& );
-    void scopeChanged( const QString& );
-    void stateChanged( const QString& );
-    void apiKeyChanged( const QString& );
+    void clientIdChanged( const QString & );
+    void clientSecretChanged( const QString & );
+    void usernameChanged( const QString & );
+    void passwordChanged( const QString & );
+    void scopeChanged( const QString & );
+    void stateChanged( const QString & );
+    void apiKeyChanged( const QString & );
 
     // advanced
     void persistTokenChanged( bool );
     void accessMethodChanged( AccessMethod );
     void requestTimeoutChanged( int );
-    void queryPairsChanged( const QVariantMap& );
+    void queryPairsChanged( const QVariantMap & );
 
     void validityChanged( bool );
 

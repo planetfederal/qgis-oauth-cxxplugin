@@ -26,11 +26,11 @@
 
 
 QgsO2::QgsO2( const QString &authcfg, QgsAuthOAuth2Config *oauth2config,
-              QObject *parent , QNetworkAccessManager *manager )
-    : O2( parent, manager )
-    , mTokenCacheFile( QString::null )
-    , mAuthcfg( authcfg )
-    , mOAuth2Config( oauth2config )
+              QObject *parent, QNetworkAccessManager *manager )
+  : O2( parent, manager )
+  , mTokenCacheFile( QString::null )
+  , mAuthcfg( authcfg )
+  , mOAuth2Config( oauth2config )
 {
   initOAuthConfig();
 }
@@ -46,7 +46,7 @@ QgsO2::~QgsO2()
   {
     if ( !QFile::remove( mTokenCacheFile ) )
     {
-      QgsDebugMsg( QString( "Could not remove temp token cache file: %1" ).arg( mTokenCacheFile ) );
+      QgsDebugMsg( QStringLiteral( "Could not remove temp token cache file: %1" ).arg( mTokenCacheFile ) );
     }
   }
 }
@@ -59,8 +59,8 @@ void QgsO2::initOAuthConfig()
   }
 
   // common properties to all grant flows
-  QString localpolicy = QString( "http://127.0.0.1:% 1/%1" ).arg( mOAuth2Config->redirectUrl() ).replace( "% 1", "%1" );
-  QgsDebugMsg( QString( "localpolicy(w/port): %1" ).arg( QString( localpolicy ).arg( mOAuth2Config->redirectPort() ) ) );
+  QString localpolicy = QStringLiteral( "http://127.0.0.1:% 1/%1" ).arg( mOAuth2Config->redirectUrl() ).replace( QStringLiteral( "% 1" ), QStringLiteral( "%1" ) );
+  QgsDebugMsg( QStringLiteral( "localpolicy(w/port): %1" ).arg( localpolicy.arg( mOAuth2Config->redirectPort() ) ) );
   setLocalhostPolicy( localpolicy );
   setLocalPort( mOAuth2Config->redirectPort() );
 
@@ -110,15 +110,15 @@ void QgsO2::setSettingsStore( bool persist )
 {
   mTokenCacheFile = QgsAuthOAuth2Config::tokenCachePath( mAuthcfg, !persist );
 
-  QSettings* settings = new QSettings( mTokenCacheFile, QSettings::IniFormat );
+  QSettings *settings = new QSettings( mTokenCacheFile, QSettings::IniFormat );
   O0SettingsStore *store = new O0SettingsStore( settings, O2_ENCRYPTION_KEY );
-  store->setGroupKey( QString( "authcfg_%1" ).arg( mAuthcfg ) );
+  store->setGroupKey( QStringLiteral( "authcfg_%1" ).arg( mAuthcfg ) );
   setStore( store );
 }
 
 void QgsO2::setVerficationResponseContent()
 {
-  QFile verhtml( ":/oauth2method/oauth2_verification_finished.html" );
+  QFile verhtml( QStringLiteral( ":/oauth2method/oauth2_verification_finished.html" ) );
   if ( verhtml.open( QIODevice::ReadOnly | QIODevice::Text ) )
   {
     setReplyContent( verhtml.readAll() );

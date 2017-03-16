@@ -17,59 +17,82 @@
 #include <QDir>
 #include <QSettings>
 
-#if QT_VERSION < 0x050000
-// use QJson third-party lib
-#include <qjson/parser.h>
-#include <qjson/serializer.h>
-#include <qjson/qobjecthelper.h>
-#else
-// TODO include <QJsonDocument> etc from QtCore?
-#endif
+#include "qjsonwrapper/Json.h"
 
 #include "qgsapplication.h"
 #include "qgslogger.h"
 
 
 QgsAuthOAuth2Config::QgsAuthOAuth2Config( QObject *parent )
-    : QObject( parent )
-    , mVersion( 1 )
-    , mConfigType( Custom )
-    , mGrantFlow( AuthCode )
-    , mRedirectPort( 7070 )
-    , mPersistToken( false )
-    , mAccessMethod( Header )
-    , mRequestTimeout( 30 ) // in seconds
-    , mQueryPairs( QVariantMap() )
-    , mValid( false )
+  : QObject( parent )
+  , mVersion( 1 )
+  , mConfigType( Custom )
+  , mGrantFlow( AuthCode )
+  , mRedirectPort( 7070 )
+  , mPersistToken( false )
+  , mAccessMethod( Header )
+  , mRequestTimeout( 30 ) // in seconds
+  , mQueryPairs( QVariantMap() )
+  , mValid( false )
 {
 
   // internal signal bounces
-  connect( this, SIGNAL( idChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
+#if QT_VERSION < 0x050000
+  connect( this, SIGNAL( idChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( versionChanged( int ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( configTypeChanged( ConfigType ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( grantFlowChanged( GrantFlow ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( nameChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( descriptionChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( requestUrlChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( tokenUrlChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( refreshTokenUrlChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( redirectUrlChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( nameChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( descriptionChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( requestUrlChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( tokenUrlChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( refreshTokenUrlChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( redirectUrlChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( redirectPortChanged( int ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( clientIdChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( clientSecretChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( usernameChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( passwordChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( scopeChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( stateChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( apiKeyChanged( const QString& ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( clientIdChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( clientSecretChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( usernameChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( passwordChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( scopeChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( stateChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( apiKeyChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( persistTokenChanged( bool ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( accessMethodChanged( AccessMethod ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( requestTimeoutChanged( int ) ), this, SIGNAL( configChanged() ) );
-  connect( this, SIGNAL( queryPairsChanged( const QVariantMap& ) ), this, SIGNAL( configChanged() ) );
+  connect( this, SIGNAL( queryPairsChanged( const QVariantMap & ) ), this, SIGNAL( configChanged() ) );
 
   // always recheck validity on any change
   // this, in turn, may emit validityChanged( bool )
   connect( this, SIGNAL( configChanged() ), this, SLOT( validateConfig() ) );
+#else
+  connect( this, &QgsAuthOAuth2Config::idChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::versionChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::configTypeChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::grantFlowChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::nameChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::descriptionChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::requestUrlChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::tokenUrlChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::refreshTokenUrlChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::redirectUrlChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::redirectPortChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::clientIdChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::clientSecretChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::usernameChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::passwordChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::scopeChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::stateChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::apiKeyChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::persistTokenChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::accessMethodChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::requestTimeoutChanged, this, &QgsAuthOAuth2Config::configChanged );
+  connect( this, &QgsAuthOAuth2Config::queryPairsChanged, this, &QgsAuthOAuth2Config::configChanged );
+
+  // always recheck validity on any change
+  // this, in turn, may emit validityChanged( bool )
+  connect( this, SIGNAL( configChanged() ), this, SLOT( validateConfig() ) );
+//  connect( this, &QgsAuthOAuth2Config::configChanged, this, &QgsAuthOAuth2Config::validateConfig );
+#endif
 
   validateConfig();
 }
@@ -310,8 +333,6 @@ void QgsAuthOAuth2Config::validateConfig( bool needsId )
   else if ( mGrantFlow == ResourceOwner )
   {
     mValid = ( !tokenUrl().isEmpty()
-               && !clientId().isEmpty()
-               && !clientSecret().isEmpty()
                && !username().isEmpty()
                && !password().isEmpty()
                && ( needsId ? !id().isEmpty() : true ) );
@@ -323,26 +344,22 @@ void QgsAuthOAuth2Config::validateConfig( bool needsId )
 bool QgsAuthOAuth2Config::loadConfigTxt(
   const QByteArray &configtxt, QgsAuthOAuth2Config::ConfigFormat format )
 {
+  QByteArray errStr;
   bool res = false;
 
   if ( format == JSON )
   {
-#if QT_VERSION < 0x050000
-    QJson::Parser parser;
-    QVariant variant = parser.parse( configtxt, &res );
+    QVariant variant = QJsonWrapper::parseJson( configtxt, errStr, &res );
     if ( !res )
     {
-      QgsDebugMsg( QString( "Error parsing JSON: %1" ).arg( parser.errorString() ) );
+      QgsDebugMsg( QStringLiteral( "Error parsing JSON: %1" ).arg( QString( errStr ) ) );
       return res;
     }
-    QJson::QObjectHelper::qvariant2qobject( variant.toMap(), this );
-#else
-    // TODO add QJsonDocument support
-#endif
+    QJsonWrapper::qvariant2qobject( variant.toMap(), this );
   }
   else
   {
-    QgsDebugMsg( "Unsupported output format" );
+    QgsDebugMsg( QStringLiteral( "Unsupported output format" ) );
   }
   return true;
 }
@@ -351,35 +368,28 @@ QByteArray QgsAuthOAuth2Config::saveConfigTxt(
   QgsAuthOAuth2Config::ConfigFormat format, bool pretty, bool *ok ) const
 {
   QByteArray out;
+  QByteArray errStr;
   bool res = false;
 
   if ( !isValid() )
   {
-    QgsDebugMsg( "FAILED, config is not valid" );
+    QgsDebugMsg( QStringLiteral( "FAILED, config is not valid" ) );
     if ( ok ) *ok = res;
     return out;
   }
 
   if ( format == JSON )
   {
-#if QT_VERSION < 0x050000
-    QVariantMap variant = QJson::QObjectHelper::qobject2qvariant( this );
-    QJson::Serializer serializer;
-    serializer.setIndentMode( pretty ? QJson::IndentFull : QJson::IndentCompact );
-    out = serializer.serialize( variant, &res );
+    QVariantMap variant = QJsonWrapper::qobject2qvariant( this );
+    out = QJsonWrapper::toJson( variant, errStr, pretty, &res );
     if ( !res )
     {
-      QgsDebugMsg( QString( "Error serializing JSON: %1" ).arg( serializer.errorMessage() ) );
-      if ( ok ) *ok = res;
-      return out;
+      QgsDebugMsg( QStringLiteral( "Error serializing JSON: %1" ).arg( QString( errStr ) ) );
     }
-#else
-    // TODO add Qt5 QJson* support
-#endif
   }
   else
   {
-    QgsDebugMsg( "Unsupported output format" );
+    QgsDebugMsg( QStringLiteral( "Unsupported output format" ) );
   }
 
   if ( ok ) *ok = res;
@@ -389,28 +399,28 @@ QByteArray QgsAuthOAuth2Config::saveConfigTxt(
 QVariantMap QgsAuthOAuth2Config::mappedProperties() const
 {
   QVariantMap vmap;
-  vmap.insert( "apiKey", this->apiKey() );
-  vmap.insert( "clientId", this->clientId() );
-  vmap.insert( "clientSecret", this->clientSecret() );
-  vmap.insert( "configType", static_cast<int>( this->configType() ) );
-  vmap.insert( "description", this->description() );
-  vmap.insert( "grantFlow", static_cast<int>( this->grantFlow() ) );
-  vmap.insert( "id", this->id() );
-  vmap.insert( "name", this->name() );
-  vmap.insert( "password", this->password() );
-  vmap.insert( "persistToken", this->persistToken() );
-  vmap.insert( "queryPairs", this->queryPairs() );
-  vmap.insert( "redirectPort", this->redirectPort() );
-  vmap.insert( "redirectUrl", this->redirectUrl() );
-  vmap.insert( "refreshTokenUrl", this->refreshTokenUrl() );
-  vmap.insert( "accessMethod", static_cast<int>( this->accessMethod() ) );
-  vmap.insert( "requestTimeout", this->requestTimeout() );
-  vmap.insert( "requestUrl", this->requestUrl() );
-  vmap.insert( "scope", this->scope() );
-  vmap.insert( "state", this->state() );
-  vmap.insert( "tokenUrl", this->tokenUrl() );
-  vmap.insert( "username", this->username() );
-  vmap.insert( "version", this->version() );
+  vmap.insert( QStringLiteral( "apiKey" ), this->apiKey() );
+  vmap.insert( QStringLiteral( "clientId" ), this->clientId() );
+  vmap.insert( QStringLiteral( "clientSecret" ), this->clientSecret() );
+  vmap.insert( QStringLiteral( "configType" ), static_cast<int>( this->configType() ) );
+  vmap.insert( QStringLiteral( "description" ), this->description() );
+  vmap.insert( QStringLiteral( "grantFlow" ), static_cast<int>( this->grantFlow() ) );
+  vmap.insert( QStringLiteral( "id" ), this->id() );
+  vmap.insert( QStringLiteral( "name" ), this->name() );
+  vmap.insert( QStringLiteral( "password" ), this->password() );
+  vmap.insert( QStringLiteral( "persistToken" ), this->persistToken() );
+  vmap.insert( QStringLiteral( "queryPairs" ), this->queryPairs() );
+  vmap.insert( QStringLiteral( "redirectPort" ), this->redirectPort() );
+  vmap.insert( QStringLiteral( "redirectUrl" ), this->redirectUrl() );
+  vmap.insert( QStringLiteral( "refreshTokenUrl" ), this->refreshTokenUrl() );
+  vmap.insert( QStringLiteral( "accessMethod" ), static_cast<int>( this->accessMethod() ) );
+  vmap.insert( QStringLiteral( "requestTimeout" ), this->requestTimeout() );
+  vmap.insert( QStringLiteral( "requestUrl" ), this->requestUrl() );
+  vmap.insert( QStringLiteral( "scope" ), this->scope() );
+  vmap.insert( QStringLiteral( "state" ), this->state() );
+  vmap.insert( QStringLiteral( "tokenUrl" ), this->tokenUrl() );
+  vmap.insert( QStringLiteral( "username" ), this->username() );
+  vmap.insert( QStringLiteral( "version" ), this->version() );
 
   return vmap;
 }
@@ -423,27 +433,20 @@ QByteArray QgsAuthOAuth2Config::serializeFromVariant(
   bool *ok )
 {
   QByteArray out;
+  QByteArray errStr;
   bool res = false;
 
   if ( format == JSON )
   {
-#if QT_VERSION < 0x050000
-    QJson::Serializer serializer;
-    serializer.setIndentMode( pretty ? QJson::IndentFull : QJson::IndentCompact );
-    out = serializer.serialize( variant, &res );
+    out = QJsonWrapper::toJson( variant, errStr, pretty, &res );
     if ( !res )
     {
-      QgsDebugMsg( QString( "Error serializing JSON: %1" ).arg( serializer.errorMessage() ) );
-      if ( ok ) *ok = res;
-      return out;
+      QgsDebugMsg( QStringLiteral( "Error serializing JSON: %1" ).arg( QString( errStr ) ) );
     }
-#else
-    // TODO add Qt5 QJson* support
-#endif
   }
   else
   {
-    QgsDebugMsg( "Unsupported output format" );
+    QgsDebugMsg( QStringLiteral( "Unsupported output format" ) );
   }
 
   if ( ok ) *ok = res;
@@ -457,39 +460,36 @@ QVariantMap QgsAuthOAuth2Config::variantFromSerialized(
   bool *ok )
 {
   QVariantMap vmap;
+  QByteArray errStr;
   bool res = false;
 
   if ( format == JSON )
   {
-#if QT_VERSION < 0x050000
-    QJson::Parser parser;
-    QVariant var = parser.parse( serial, &res );
+    QVariant var = QJsonWrapper::parseJson( serial, errStr, &res );
     if ( !res )
     {
-      QgsDebugMsg( QString( "Error parsing JSON to variant: %1" ).arg( parser.errorString() ) );
+      QgsDebugMsg( QStringLiteral( "Error parsing JSON to variant: %1" ).arg( QString( errStr ) ) );
       if ( ok ) *ok = res;
       return vmap;
     }
+
     if ( !var.isValid() || var.isNull() )
     {
-      QgsDebugMsg( QString( "Error parsing JSON to variant: %1" ).arg( "invalid or null" ) );
+      QgsDebugMsg( QStringLiteral( "Error parsing JSON to variant: %1" ).arg( "invalid or null" ) );
       if ( ok ) *ok = res;
       return vmap;
     }
     vmap = var.toMap();
     if ( vmap.isEmpty() )
     {
-      QgsDebugMsg( QString( "Error parsing JSON to variantmap: %1" ).arg( "map empty" ) );
+      QgsDebugMsg( QStringLiteral( "Error parsing JSON to variantmap: %1" ).arg( "map empty" ) );
       if ( ok ) *ok = res;
       return vmap;
     }
-#else
-    // TODO add QJsonDocument support
-#endif
   }
   else
   {
-    QgsDebugMsg( "Unsupported output format" );
+    QgsDebugMsg( QStringLiteral( "Unsupported output format" ) );
   }
 
   if ( ok ) *ok = res;
@@ -507,7 +507,7 @@ bool QgsAuthOAuth2Config::writeOAuth2Config(
   QByteArray configtxt = config->saveConfigTxt( format, pretty, &res );
   if ( !res )
   {
-    QgsDebugMsg( "FAILED to save config to text" );
+    QgsDebugMsg( QStringLiteral( "FAILED to save config to text" ) );
     return false;
   }
 
@@ -520,19 +520,19 @@ bool QgsAuthOAuth2Config::writeOAuth2Config(
     config_file.close();
     if ( bytesWritten == -1 )
     {
-      QgsDebugMsg( QString( "FAILED to write config file: %1" ).arg( file_path ) );
+      QgsDebugMsg( QStringLiteral( "FAILED to write config file: %1" ).arg( file_path ) );
       return false;
     }
   }
   else
   {
-    QgsDebugMsg( QString( "FAILED to open for writing config file: %1" ).arg( file_path ) );
+    QgsDebugMsg( QStringLiteral( "FAILED to open for writing config file: %1" ).arg( file_path ) );
     return false;
   }
 
   if ( !config_file.setPermissions( QFile::ReadOwner | QFile::WriteOwner ) )
   {
-    QgsDebugMsg( QString( "FAILED to set permissions config file: %1" ).arg( file_path ) );
+    QgsDebugMsg( QStringLiteral( "FAILED to set permissions config file: %1" ).arg( file_path ) );
     return false;
   }
 
@@ -540,23 +540,23 @@ bool QgsAuthOAuth2Config::writeOAuth2Config(
 }
 
 // static
-QList<QgsAuthOAuth2Config*> QgsAuthOAuth2Config::loadOAuth2Configs(
+QList<QgsAuthOAuth2Config *> QgsAuthOAuth2Config::loadOAuth2Configs(
   const QString &configdirectory,
   QObject *parent,
   QgsAuthOAuth2Config::ConfigFormat format,
   bool *ok )
 {
-  QList<QgsAuthOAuth2Config*> configs = QList<QgsAuthOAuth2Config*>();
+  QList<QgsAuthOAuth2Config *> configs = QList<QgsAuthOAuth2Config *>();
   bool res = false;
   QStringList namefilters;
 
   if ( format == JSON )
   {
-    namefilters << "*.json";
+    namefilters << QStringLiteral( "*.json" );
   }
   else
   {
-    QgsDebugMsg( "Unsupported output format" );
+    QgsDebugMsg( QStringLiteral( "Unsupported output format" ) );
     if ( ok ) *ok = res;
     return configs;
   }
@@ -567,12 +567,12 @@ QList<QgsAuthOAuth2Config*> QgsAuthOAuth2Config::loadOAuth2Configs(
 
   if ( configfiles.size() > 0 )
   {
-    QgsDebugMsg( QString( "Config files found in: %1...\n%2" )
-                 .arg( configdir.path(), configfiles.join( ", " ) ) );
+    QgsDebugMsg( QStringLiteral( "Config files found in: %1...\n%2" )
+                 .arg( configdir.path(), configfiles.join( QStringLiteral( ", " ) ) ) );
   }
   else
   {
-    QgsDebugMsg( QString( "No config files found in: %1" ).arg( configdir.path() ) );
+    QgsDebugMsg( QStringLiteral( "No config files found in: %1" ).arg( configdir.path() ) );
     if ( ok ) *ok = res;
     return configs;
   }
@@ -581,7 +581,7 @@ QList<QgsAuthOAuth2Config*> QgsAuthOAuth2Config::loadOAuth2Configs(
   Q_FOREACH ( const QString &configfile, configfiles )
   {
     QByteArray configtxt;
-    QFile cfile( configdir.path() + "/" + configfile );
+    QFile cfile( configdir.path() + QStringLiteral( "/" ) + configfile );
     if ( cfile.exists() )
     {
       bool ret = cfile.open( QIODevice::ReadOnly | QIODevice::Text );
@@ -591,21 +591,21 @@ QList<QgsAuthOAuth2Config*> QgsAuthOAuth2Config::loadOAuth2Configs(
       }
       else
       {
-        QgsDebugMsg( QString( "FAILED to open config for reading: %1" ).arg( configfile ) );
+        QgsDebugMsg( QStringLiteral( "FAILED to open config for reading: %1" ).arg( configfile ) );
       }
       cfile.close();
     }
 
     if ( configtxt.isEmpty() )
     {
-      QgsDebugMsg( QString( "EMPTY read of config: %1" ).arg( configfile ) );
+      QgsDebugMsg( QStringLiteral( "EMPTY read of config: %1" ).arg( configfile ) );
       continue;
     }
 
     QgsAuthOAuth2Config *config = new QgsAuthOAuth2Config( parent );
     if ( !config->loadConfigTxt( configtxt, format ) )
     {
-      QgsDebugMsg( QString( "FAILED to load config: %1" ).arg( configfile ) );
+      QgsDebugMsg( QStringLiteral( "FAILED to load config: %1" ).arg( configfile ) );
       config->deleteLater();
       continue;
     }
@@ -629,11 +629,11 @@ QgsStringMap QgsAuthOAuth2Config::mapOAuth2Configs(
 
   if ( format == JSON )
   {
-    namefilters << "*.json";
+    namefilters << QStringLiteral( "*.json" );
   }
   else
   {
-    QgsDebugMsg( "Unsupported output format" );
+    QgsDebugMsg( QStringLiteral( "Unsupported output format" ) );
     if ( ok ) *ok = res;
     return configs;
   }
@@ -644,12 +644,12 @@ QgsStringMap QgsAuthOAuth2Config::mapOAuth2Configs(
 
   if ( configfiles.size() > 0 )
   {
-    QgsDebugMsg( QString( "Config files found in: %1...\n%2" )
-                 .arg( configdir.path(), configfiles.join( ", " ) ) );
+    QgsDebugMsg( QStringLiteral( "Config files found in: %1...\n%2" )
+                 .arg( configdir.path(), configfiles.join( QStringLiteral( ", " ) ) ) );
   }
   else
   {
-    QgsDebugMsg( QString( "No config files found in: %1" ).arg( configdir.path() ) );
+    QgsDebugMsg( QStringLiteral( "No config files found in: %1" ).arg( configdir.path() ) );
     if ( ok ) *ok = res;
     return configs;
   }
@@ -658,7 +658,7 @@ QgsStringMap QgsAuthOAuth2Config::mapOAuth2Configs(
   Q_FOREACH ( const QString &configfile, configfiles )
   {
     QByteArray configtxt;
-    QFile cfile( configdir.path() + "/" + configfile );
+    QFile cfile( configdir.path() + QStringLiteral( "/" ) + configfile );
     if ( cfile.exists() )
     {
       bool ret = cfile.open( QIODevice::ReadOnly | QIODevice::Text );
@@ -668,14 +668,14 @@ QgsStringMap QgsAuthOAuth2Config::mapOAuth2Configs(
       }
       else
       {
-        QgsDebugMsg( QString( "FAILED to open config for reading: %1" ).arg( configfile ) );
+        QgsDebugMsg( QStringLiteral( "FAILED to open config for reading: %1" ).arg( configfile ) );
       }
       cfile.close();
     }
 
     if ( configtxt.isEmpty() )
     {
-      QgsDebugMsg( QString( "EMPTY read of config: %1" ).arg( configfile ) );
+      QgsDebugMsg( QStringLiteral( "EMPTY read of config: %1" ).arg( configfile ) );
       continue;
     }
 
@@ -683,13 +683,13 @@ QgsStringMap QgsAuthOAuth2Config::mapOAuth2Configs(
     QgsAuthOAuth2Config *config = new QgsAuthOAuth2Config( parent );
     if ( !config->loadConfigTxt( configtxt, format ) )
     {
-      QgsDebugMsg( QString( "FAILED to load config: %1" ).arg( configfile ) );
+      QgsDebugMsg( QStringLiteral( "FAILED to load config: %1" ).arg( configfile ) );
       config->deleteLater();
       continue;
     }
     if ( config->id().isEmpty() )
     {
-      QgsDebugMsg( QString( "NO ID SET for config: %1" ).arg( configfile ) );
+      QgsDebugMsg( QStringLiteral( "NO ID SET for config: %1" ).arg( configfile ) );
       config->deleteLater();
       continue;
     }
@@ -710,7 +710,7 @@ QgsStringMap QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( const QString &extra
   QStringList configdirs;
   // in order of override preference, i.e. user over pkg dir
   configdirs << QgsAuthOAuth2Config::oauth2ConfigsPkgDataDir()
-  << QgsAuthOAuth2Config::oauth2ConfigsUserSettingsDir();
+             << QgsAuthOAuth2Config::oauth2ConfigsUserSettingsDir();
 
   if ( !extradir.isEmpty() )
   {
@@ -718,7 +718,7 @@ QgsStringMap QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( const QString &extra
     configdirs << extradir;
   }
 
-  Q_FOREACH ( QString configdir, configdirs )
+  Q_FOREACH ( const QString &configdir, configdirs )
   {
     QFileInfo configdirinfo( configdir );
     if ( !configdirinfo.exists() || !configdirinfo.isDir() )
@@ -743,13 +743,13 @@ QgsStringMap QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( const QString &extra
 // static
 QString QgsAuthOAuth2Config::oauth2ConfigsPkgDataDir()
 {
-  return QgsApplication::pkgDataPath() + "/oauth2_configs";
+  return QgsApplication::pkgDataPath() + QStringLiteral( "/oauth2_configs" );
 }
 
 // static
 QString QgsAuthOAuth2Config::oauth2ConfigsUserSettingsDir()
 {
-  return QgsApplication::qgisSettingsDirPath() + "/oauth2_configs";
+  return QgsApplication::qgisSettingsDirPath() + QStringLiteral( "/oauth2_configs" );
 }
 
 // static
@@ -796,18 +796,18 @@ QString QgsAuthOAuth2Config::accessMethodString( QgsAuthOAuth2Config::AccessMeth
 QString QgsAuthOAuth2Config::tokenCacheDirectory( bool temporary )
 {
   QDir setdir( QgsApplication::qgisSettingsDirPath() );
-  return  QString( "%1/oauth2-cache" ).arg( temporary ? QDir::tempPath() : setdir.canonicalPath() );
+  return  QStringLiteral( "%1/oauth2-cache" ).arg( temporary ? QDir::tempPath() : setdir.canonicalPath() );
 }
 
 // static
 QString QgsAuthOAuth2Config::tokenCacheFile( const QString &suffix )
 {
-  return QString( "authcfg-%1.ini" ).arg( !suffix.isEmpty() ? suffix : "cache" );
+  return QStringLiteral( "authcfg-%1.ini" ).arg( !suffix.isEmpty() ? suffix : QStringLiteral( "cache" ) );
 }
 
 // static
 QString QgsAuthOAuth2Config::tokenCachePath( const QString &suffix, bool temporary )
 {
-  return QString( "%1/%2" ).arg( QgsAuthOAuth2Config::tokenCacheDirectory( temporary ),
-                                 QgsAuthOAuth2Config::tokenCacheFile( suffix ) );
+  return QStringLiteral( "%1/%2" ).arg( QgsAuthOAuth2Config::tokenCacheDirectory( temporary ),
+                                        QgsAuthOAuth2Config::tokenCacheFile( suffix ) );
 }

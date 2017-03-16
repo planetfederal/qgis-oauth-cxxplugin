@@ -26,8 +26,8 @@ class QgsO2: public O2
     Q_OBJECT
 
   public:
-    explicit QgsO2( const QString &authcfg, QgsAuthOAuth2Config *oauth2config = 0,
-                    QObject *parent = 0, QNetworkAccessManager *manager = 0 );
+    explicit QgsO2( const QString &authcfg, QgsAuthOAuth2Config *oauth2config = nullptr,
+                    QObject *parent = nullptr, QNetworkAccessManager *manager = nullptr );
 
     ~QgsO2();
 
