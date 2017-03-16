@@ -88,7 +88,7 @@ qvariant2qobject( const QVariantMap& variant, QObject* object )
 
 
 QVariant
-parseJson( const QByteArray& jsonData, bool* ok )
+parseJson(const QByteArray& jsonData, QByteArray &errorString, bool* ok )
 {
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
     QJsonParseError error;
@@ -97,16 +97,22 @@ parseJson( const QByteArray& jsonData, bool* ok )
     {
         *ok = ( error.error == QJsonParseError::NoError );
     }
+    errorString = error.errorString().toLatin1();
     return doc.toVariant();
 #else
     QJson::Parser p;
-    return p.parse( jsonData, ok );
+    QVariant variant = p.parse( jsonData, ok );
+    if ( !ok )
+    {
+        errorString = p.errorString();
+    }
+    return variant;
 #endif
 }
 
 
 QByteArray
-toJson( const QVariant &variant, bool* ok )
+toJson( const QVariant &variant, QByteArray& errorString, bool indented, bool* ok )
 {
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
     QVariant _variant = variant;
@@ -129,10 +135,21 @@ toJson( const QVariant &variant, bool* ok )
     {
         *ok = !doc.isNull();
     }
-    return doc.toJson();
+    if ( !ok )
+    {
+        errorString = QByteArray( "Failed to convert from variant" );
+    }
+    return doc.toJson( indented ? QJsonDocument::Indented : QJsonDocument::Compact );
 #else
+    QByteArray out;
     QJson::Serializer serializer;
-    return serializer.serialize( variant, ok );
+    serializer.setIndentMode( indented ? QJson::IndentFull : QJson::IndentCompact );
+    out = serializer.serialize( variant, ok );
+    if ( !ok )
+    {
+      errorString = serializer.errorMessage();
+    }
+    return out
 #endif
 }
 

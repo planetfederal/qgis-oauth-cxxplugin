@@ -49,10 +49,11 @@ namespace QJsonWrapper
      * Parse the JSON string and return the result as a QVariant.
      *
      * @param jsonData The string containing the data as JSON.
+     * @param errorString Any error string produced during parsing
      * @param ok Set to true if the conversion was successful, otherwise false.
      * @return After a successful conversion the parsed data either as QVariantMap or QVariantList.
      */
-    QVariant parseJson( const QByteArray& jsonData, bool* ok = 0, QByteArray& errorString = QByteArray() );
+    QVariant parseJson( const QByteArray& jsonData, QByteArray& errorString, bool* ok = 0 );
 
     /**
      * Convert a QVariant to a JSON representation.
@@ -64,10 +65,12 @@ namespace QJsonWrapper
      * QVariantMap in your code than passing them here.
      *
      * @param variant The data to be serialised.
+     * @param errorString Any error string produced during conversion
+     * @param indented Whether to indent resultant JSON code
      * @param ok Set to true if the conversion was successful, otherwise false.
      * @return After a successful serialisation the data of the QVariant represented as JSON.
      */
-    QByteArray toJson( const QVariant &variant, bool* ok = 0 );
+    QByteArray toJson( const QVariant &variant, QByteArray& errorString, bool indented = false, bool* ok = 0 );
 }
 
 #endif // QJSONWRAPPER_JSON_H
