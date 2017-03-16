@@ -37,7 +37,7 @@ QgsAuthOAuth2Config::QgsAuthOAuth2Config( QObject *parent )
 {
 
   // internal signal bounces
-#if QT_VERSION < 0x050000
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
   connect( this, SIGNAL( idChanged( const QString & ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( versionChanged( int ) ), this, SIGNAL( configChanged() ) );
   connect( this, SIGNAL( configTypeChanged( ConfigType ) ), this, SIGNAL( configChanged() ) );

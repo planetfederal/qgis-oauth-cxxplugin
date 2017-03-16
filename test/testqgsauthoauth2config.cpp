@@ -45,7 +45,7 @@ void suppressDebugHandler( QtMsgType type, const char *msg )
 {
   switch ( type )
   {
-#if QT_VERSION >= 0x050500
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 5, 0 )
     case QtInfoMsg:
       break;
 #endif
@@ -171,7 +171,7 @@ QByteArray TestQgsAuthOAuth2Config::baseConfigTxt( bool pretty )
   QByteArray out;
   if ( pretty )
   {
-#if QT_VERSION < 0x050000
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     out += "{\n"
            " \"accessMethod\" : 0,\n"
            " \"apiKey\" : \"someapikey\",\n"
@@ -241,7 +241,7 @@ QByteArray TestQgsAuthOAuth2Config::baseConfigTxt( bool pretty )
            "\"grantFlow\":0,"
            "\"id\":\"abc1234\","
            "\"name\":\"MyConfig\","
-#if QT_VERSION >= 0x050000
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
            "\"objectName\":\"\","
 #endif
            "\"password\":\"mypassword\","
@@ -273,7 +273,7 @@ QVariantMap TestQgsAuthOAuth2Config::baseVariantMap()
   vmap.insert( "grantFlow", 0 );
   vmap.insert( "id", "abc1234" );
   vmap.insert( "name", "MyConfig" );
-#if QT_VERSION >= 0x050000
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
   vmap.insert( "objectName", "" );
 #endif
   vmap.insert( "password", "mypassword" );

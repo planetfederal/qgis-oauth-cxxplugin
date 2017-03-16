@@ -234,7 +234,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
   QgsAuthOAuth2Config::AccessMethod accessmethod = o2->oauth2config()->accessMethod();
 
   QUrl url = request.url();
-#if QT_VERSION >= 0x050000
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
   QUrlQuery query( url );
 #endif
   switch ( accessmethod )
@@ -251,7 +251,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
       QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::WARNING );
       break;
     case QgsAuthOAuth2Config::Query:
-#if QT_VERSION < 0x050000
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
       if ( !url.hasQueryItem( O2_OAUTH2_ACCESS_TOKEN ) )
       {
         url.addQueryItem( O2_OAUTH2_ACCESS_TOKEN, o2->token() );

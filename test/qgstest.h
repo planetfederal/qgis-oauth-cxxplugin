@@ -19,7 +19,7 @@
 #include <QtTest/QtTest>
 #include "qgsapplication.h"
 
-#if QT_VERSION >= 0x050000
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
 #define QGSTEST_MAIN(TestObject) \
   QT_BEGIN_NAMESPACE \
   QTEST_ADD_GPU_BLACKLIST_SUPPORT_DEFS \
