@@ -23,79 +23,81 @@
 
 // Qt version specific includes
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
-    #include <QJsonDocument>
-    #include <QMetaProperty>
-    #include <QVariantHash>
+#include <QJsonDocument>
+#include <QMetaProperty>
+#include <QVariantHash>
 #else
-    #include <qjson/parser.h>
-    #include <qjson/qobjecthelper.h>
-    #include <qjson/serializer.h>
+#include <qjson/parser.h>
+#include <qjson/qobjecthelper.h>
+#include <qjson/serializer.h>
 #endif
 
 namespace QJsonWrapper
 {
 
-QVariantMap
-qobject2qvariant( const QObject* object )
-{
+  QVariantMap
+  qobject2qvariant( const QObject *object )
+  {
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
     QVariantMap map;
     if ( object == NULL )
     {
-        return map;
+      return map;
     }
 
-    const QMetaObject* metaObject = object->metaObject();
+    const QMetaObject *metaObject = object->metaObject();
     for ( int i = 0; i < metaObject->propertyCount(); ++i )
     {
-        QMetaProperty metaproperty = metaObject->property( i );
-        if ( metaproperty.isReadable() )
-        {
-            map[ QLatin1String( metaproperty.name() ) ] = object->property( metaproperty.name() );
-        }
+      QMetaProperty metaproperty = metaObject->property( i );
+      if ( metaproperty.isReadable() )
+      {
+        map[ QLatin1String( metaproperty.name() ) ] = object->property( metaproperty.name() );
+      }
     }
     return map;
 #else
     return QJson::QObjectHelper::qobject2qvariant( object );
 #endif
-}
+  }
 
 
-void
-qvariant2qobject( const QVariantMap& variant, QObject* object )
-{
+  void
+  qvariant2qobject( const QVariantMap &variant, QObject *object )
+  {
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
     for ( QVariantMap::const_iterator iter = variant.begin(); iter != variant.end(); ++iter )
     {
-        QVariant property = object->property( iter.key().toLatin1() );
-        Q_ASSERT( property.isValid() );
-        if ( property.isValid() )
+      QVariant property = object->property( iter.key().toLatin1() );
+      Q_ASSERT( property.isValid() );
+      if ( property.isValid() )
+      {
+        QVariant value = iter.value();
+        if ( value.canConvert( property.type() ) )
         {
-            QVariant value = iter.value();
-            if ( value.canConvert( property.type() ) )
-            {
-                value.convert( property.type() );
-                object->setProperty( iter.key().toLatin1(), value );
-            } else if ( QString( QLatin1String("QVariant") ).compare( QLatin1String( property.typeName() ) ) == 0 ) {
-                object->setProperty( iter.key().toLatin1(), value );
-            }
+          value.convert( property.type() );
+          object->setProperty( iter.key().toLatin1(), value );
         }
+        else if ( QString( QLatin1String( "QVariant" ) ).compare( QLatin1String( property.typeName() ) ) == 0 )
+        {
+          object->setProperty( iter.key().toLatin1(), value );
+        }
+      }
     }
 #else
     QJson::QObjectHelper::qvariant2qobject( variant, object );
 #endif
-}
+  }
 
 
-QVariant
-parseJson(const QByteArray& jsonData, QByteArray &errorString, bool* ok )
-{
+  QVariant
+  parseJson( const QByteArray &jsonData, QByteArray &errorString, bool *ok )
+  {
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson( jsonData, &error );
     if ( ok != NULL )
     {
-        *ok = ( error.error == QJsonParseError::NoError );
+      *ok = ( error.error == QJsonParseError::NoError );
     }
     errorString = error.errorString().toLatin1();
     return doc.toVariant();
@@ -104,40 +106,40 @@ parseJson(const QByteArray& jsonData, QByteArray &errorString, bool* ok )
     QVariant variant = p.parse( jsonData, ok );
     if ( !ok )
     {
-        errorString = p.errorString();
+      errorString = p.errorString();
     }
     return variant;
 #endif
-}
+  }
 
 
-QByteArray
-toJson( const QVariant &variant, QByteArray& errorString, bool indented, bool* ok )
-{
+  QByteArray
+  toJson( const QVariant &variant, QByteArray &errorString, bool indented, bool *ok )
+  {
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 0, 0 )
     QVariant _variant = variant;
     if ( variant.type() == QVariant::Hash )
     {
-        // QJsonDocument cannot deal with QVariantHash, so convert.
-        const QVariantHash hash = variant.toHash();
-        QVariantMap map;
-        QHashIterator<QString, QVariant> it(hash);
-        while ( it.hasNext() )
-        {
-            it.next();
-            map.insert( it.key(), it.value() );
-        }
-        _variant = map;
+      // QJsonDocument cannot deal with QVariantHash, so convert.
+      const QVariantHash hash = variant.toHash();
+      QVariantMap map;
+      QHashIterator<QString, QVariant> it( hash );
+      while ( it.hasNext() )
+      {
+        it.next();
+        map.insert( it.key(), it.value() );
+      }
+      _variant = map;
     }
 
     QJsonDocument doc = QJsonDocument::fromVariant( _variant );
     if ( ok != NULL )
     {
-        *ok = !doc.isNull();
+      *ok = !doc.isNull();
     }
     if ( !ok )
     {
-        errorString = QByteArray( "Failed to convert from variant" );
+      errorString = QByteArray( "Failed to convert from variant" );
     }
     return doc.toJson( indented ? QJsonDocument::Indented : QJsonDocument::Compact );
 #else
@@ -151,6 +153,6 @@ toJson( const QVariant &variant, QByteArray& errorString, bool indented, bool* o
     }
     return out
 #endif
-}
+  }
 
 }
