@@ -106,7 +106,7 @@ namespace QJsonWrapper
     QVariant variant = p.parse( jsonData, ok );
     if ( !ok )
     {
-      errorString = p.errorString();
+      errorString = p.errorString().toLatin1();
     }
     return variant;
 #endif
@@ -149,9 +149,9 @@ namespace QJsonWrapper
     out = serializer.serialize( variant, ok );
     if ( !ok )
     {
-      errorString = serializer.errorMessage();
+      errorString = serializer.errorMessage().toLatin1();
     }
-    return out
+    return out;
 #endif
   }
 
