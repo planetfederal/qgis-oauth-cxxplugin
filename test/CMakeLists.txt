@@ -1,10 +1,11 @@
 # Standard includes and utils to compile into all tests.
-SET (util_SRCS testutils.h)
+SET (util_SRCS testutils.h qgstest.h)
 
 #####################################################
 # Don't forget to include output directory, otherwise
 # the UI file won't be wrapped!
 include_directories(SYSTEM
+  ${Qt5Sql_INCLUDE_DIRS}
   ${QT_INCLUDE_DIR}
   ${QGIS_INCLUDE_DIR}
   ${QCA_INCLUDE_DIR}
@@ -52,7 +53,7 @@ macro (ADD_QGIS_TEST testname testsrc)
   if(APPLE)
     target_link_libraries(qgis_${testname} ${APP_SERVICES_LIBRARY})
   endif(APPLE)
-  target_link_libraries(qgis_${testname}
+  target_link_libraries(qgis_${testname}    
     ${QGIS_CORE_LIBRARY}
     ${QGIS_GUI_LIBRARY}
     ${QT_QTCORE_LIBRARY}

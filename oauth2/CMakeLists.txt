@@ -2,9 +2,9 @@
 
 ########################################################
 # Packages
-if(WITH_DESKTOP AND ENABLE_QT5)
+if(ENABLE_QT5)
   #
-elseif(WITH_DESKTOP)
+else()
   set(QT_USE_QTSCRIPT 1)
   include(${QT_USE_FILE})
   find_package(QJSON REQUIRED)

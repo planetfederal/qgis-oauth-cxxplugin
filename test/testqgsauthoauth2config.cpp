@@ -14,6 +14,8 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "qgstest.h"
+
 #include <QtTest/QtTest>
 #include <QApplication>
 #include <QDateTime>
@@ -25,7 +27,6 @@
 #include <QTemporaryFile>
 
 #include "testutils.h"
-#include <qapplication.h>
 #include "qgsapplication.h"
 #include "qgsauthmanager.h"
 #include "qgsauthoauth2config.h"
@@ -34,9 +35,9 @@
 #include <stdlib.h>
 
 
-inline QTextStream& qStdout()
+inline QTextStream &qStdout()
 {
-  static QTextStream r(stdout);
+  static QTextStream r( stdout );
   return r;
 }
 
@@ -44,6 +45,10 @@ void suppressDebugHandler( QtMsgType type, const char *msg )
 {
   switch ( type )
   {
+#if QT_VERSION >= 0x050500
+    case QtInfoMsg:
+      break;
+#endif
     case QtDebugMsg:
       break;
     case QtWarningMsg:
@@ -83,7 +88,7 @@ class TestQgsAuthOAuth2Config: public QObject
     QByteArray baseVariantTxt();
 
     static QString smHashes;
-//    static QObject *smParentObj;
+    //static QObject *smParentObj;
     QtMsgHandler mOrigMsgHandler;
 };
 
@@ -102,7 +107,7 @@ void TestQgsAuthOAuth2Config::initTestCase()
 
   qInstallMsgHandler( mOrigMsgHandler );
 
-//  qDebug() << QgsApplication::showSettings();
+  //qDebug() << QgsApplication::showSettings().toUtf8().constData();
 }
 
 void TestQgsAuthOAuth2Config::cleanupTestCase()
@@ -115,14 +120,14 @@ void TestQgsAuthOAuth2Config::cleanupTestCase()
 void TestQgsAuthOAuth2Config::init()
 {
   qStdout() << "\n" << smHashes << " Start "
-  << QTest::currentTestFunction() << " " << smHashes << "\n";
+            << QTest::currentTestFunction() << " " << smHashes << "\n";
   qStdout().flush();
 }
 
 void TestQgsAuthOAuth2Config::cleanup()
 {
   qStdout() << smHashes << " End "
-  << QTest::currentTestFunction() << " " << smHashes << "\n";
+            << QTest::currentTestFunction() << " " << smHashes << "\n";
   qStdout().flush();
 }
 
@@ -166,6 +171,7 @@ QByteArray TestQgsAuthOAuth2Config::baseConfigTxt( bool pretty )
   QByteArray out;
   if ( pretty )
   {
+#if QT_VERSION < 0x050000
     out += "{\n"
            " \"accessMethod\" : 0,\n"
            " \"apiKey\" : \"someapikey\",\n"
@@ -193,6 +199,36 @@ QByteArray TestQgsAuthOAuth2Config::baseConfigTxt( bool pretty )
            " \"username\" : \"myusername\",\n"
            " \"version\" : 1\n"
            "}";
+#else
+    out += "{\n"
+           "    \"accessMethod\": 0,\n"
+           "    \"apiKey\": \"someapikey\",\n"
+           "    \"clientId\": \"myclientid\",\n"
+           "    \"clientSecret\": \"myclientsecret\",\n"
+           "    \"configType\": 1,\n"
+           "    \"description\": \"A test config\",\n"
+           "    \"grantFlow\": 0,\n"
+           "    \"id\": \"abc1234\",\n"
+           "    \"name\": \"MyConfig\",\n"
+           "    \"objectName\": \"\",\n"
+           "    \"password\": \"mypassword\",\n"
+           "    \"persistToken\": false,\n"
+           "    \"queryPairs\": {\n"
+           "        \"pf.password\": \"mypassword\",\n"
+           "        \"pf.username\": \"myusername\"\n"
+           "    },\n"
+           "    \"redirectPort\": 7777,\n"
+           "    \"redirectUrl\": \"subdir\",\n"
+           "    \"refreshTokenUrl\": \"https://refreshtoken.oauth2.test\",\n"
+           "    \"requestTimeout\": 30,\n"
+           "    \"requestUrl\": \"https://request.oauth2.test\",\n"
+           "    \"scope\": \"scope_1 scope_2 scope_3\",\n"
+           "    \"state\": \"somestate\",\n"
+           "    \"tokenUrl\": \"https://token.oauth2.test\",\n"
+           "    \"username\": \"myusername\",\n"
+           "    \"version\": 1\n"
+           "}\n";
+#endif
   }
   else
   {
@@ -205,6 +241,9 @@ QByteArray TestQgsAuthOAuth2Config::baseConfigTxt( bool pretty )
            "\"grantFlow\":0,"
            "\"id\":\"abc1234\","
            "\"name\":\"MyConfig\","
+#if QT_VERSION >= 0x050000
+           "\"objectName\":\"\","
+#endif
            "\"password\":\"mypassword\","
            "\"persistToken\":false,"
            "\"queryPairs\":{\"pf.password\":\"mypassword\",\"pf.username\":\"myusername\"},"
@@ -234,6 +273,9 @@ QVariantMap TestQgsAuthOAuth2Config::baseVariantMap()
   vmap.insert( "grantFlow", 0 );
   vmap.insert( "id", "abc1234" );
   vmap.insert( "name", "MyConfig" );
+#if QT_VERSION >= 0x050000
+  vmap.insert( "objectName", "" );
+#endif
   vmap.insert( "password", "mypassword" );
   vmap.insert( "persistToken", false );
   QVariantMap qpairs;
@@ -395,9 +437,9 @@ void TestQgsAuthOAuth2Config::testOAuth2ConfigIO()
 
   qDebug() << "Verify reading config files from directory";
   ok = false;
-  QList<QgsAuthOAuth2Config*> configs =
+  QList<QgsAuthOAuth2Config *> configs =
     QgsAuthOAuth2Config::loadOAuth2Configs( QDir::tempPath() + "/" + dirname,
-                                            qApp, QgsAuthOAuth2Config::JSON, &ok );
+        qApp, QgsAuthOAuth2Config::JSON, &ok );
   QVERIFY( ok );
   QCOMPARE( configs.size(), 2 );
   QgsAuthOAuth2Config *config6 = configs.takeFirst();
@@ -440,5 +482,5 @@ void TestQgsAuthOAuth2Config::testOAuth2ConfigUtils()
 
 }
 
-QTEST_MAIN( TestQgsAuthOAuth2Config )
+QGSTEST_MAIN( TestQgsAuthOAuth2Config )
 #include "testqgsauthoauth2config.moc"
