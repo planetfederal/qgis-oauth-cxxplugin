@@ -9,7 +9,7 @@
 ## QGIS_INCLUDE_DIR      = where to find headers
 ## QGIS_UI_INCLUDE_DIR   = where to find ui_* generated headers
 ##
-## QGIS_VERSION..........= version as defined in qgsconfig.h, as major.minor.patch
+## QGIS_VERSION          = version as defined in qgsconfig.h, as major.minor.patch
 ##
 ## Definitions or ENV variables affecting search locations
 ##
