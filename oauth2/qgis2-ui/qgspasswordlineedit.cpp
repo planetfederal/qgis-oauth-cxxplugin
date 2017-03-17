@@ -1,9 +1,12 @@
 /***************************************************************************
-                              qgspasswordlineedit.cpp
+                              qgspasswordineedit.cpp
                               ------------------------
-  begin                : March 13, 2017
-  copyright            : (C) 2017 by Alexander Bruy
-  email                : alexander dot bruy at gmail dot com
+  begin                : August 03, 2016
+  copyright            : (C) 2016 by Boundless Spatial, Inc. USA
+  author               : Larry Shaffer
+  email                : lshaffer at boundlessgeo dot com
+
+  based on             : QgsFilterLineEdit by Alex Bruy
  ***************************************************************************/
 
 /***************************************************************************
@@ -16,61 +19,49 @@
  ***************************************************************************/
 
 #include "qgspasswordlineedit.h"
-#include "qgsapplication.h"
 
-QgsPasswordLineEdit::QgsPasswordLineEdit( QWidget *parent, bool passwordVisible )
-  : QLineEdit( parent )
-  , mActionShowHidePassword( nullptr )
-  , mActionLock( nullptr )
-  , mLockIconVisible( false )
+#include <QToolButton>
+#include <QStyle>
+
+
+QgsPasswordLineEdit::QgsPasswordLineEdit( QWidget* parent )
+    : QLineEdit( parent )
+    , btnToggle( nullptr )
 {
-  mShowPasswordIcon = QgsApplication::getThemeIcon( "/mActionShowAllLayers.svg" );
-  mHidePasswordIcon = QgsApplication::getThemeIcon( "/mActionHideAllLayers.svg" );
+  mHiddenIcon = QIcon( ":/oauth2method/oauth2_resources/hidden.svg" );
+  mShownIcon = QIcon( ":/oauth2method/oauth2_resources/visible_red.svg" );
 
-  mActionShowHidePassword = addAction( mShowPasswordIcon, QLineEdit::TrailingPosition );
-  mActionShowHidePassword->setCheckable( true );
+  setPlaceholderText( tr( "Password" ) );
+  setEchoMode( QLineEdit::Password) ;
 
-  if ( mLockIconVisible )
-  {
-    mActionLock = addAction( QgsApplication::getThemeIcon( "/lockedGray.svg" ), QLineEdit::LeadingPosition );
-  }
+  btnToggle = new QToolButton( this );
+  btnToggle->setIcon( mHiddenIcon );
+  btnToggle->setCheckable( true );
+  btnToggle->setToolTip( tr( "Toggle password visibility" ) );
+  btnToggle->setCursor( Qt::ArrowCursor );
+  btnToggle->setStyleSheet( "QToolButton { border: none; padding: 0px; }" );
 
-  togglePasswordVisibility( passwordVisible );
-  connect( mActionShowHidePassword, &QAction::triggered, this, &QgsPasswordLineEdit::togglePasswordVisibility );
+  connect( btnToggle, SIGNAL( toggled( bool ) ), this, SLOT( togglePassword( bool ) ) );
+
+  int frameWidth = style()->pixelMetric( QStyle::PM_DefaultFrameWidth );
+  mStyleSheet = QString( "QLineEdit { padding-right: %1px; } " )
+                .arg( btnToggle->sizeHint().width() + frameWidth + 1 );
+
+  QSize msz = minimumSizeHint();
+  setMinimumSize( qMax( msz.width(), btnToggle->sizeHint().height() + frameWidth * 2 + 2 ),
+                  qMax( msz.height(), btnToggle->sizeHint().height() + frameWidth * 2 + 2 ) );
 }
 
-void QgsPasswordLineEdit::togglePasswordVisibility( bool toggled )
+void QgsPasswordLineEdit::resizeEvent( QResizeEvent * )
 {
-  if ( toggled )
-  {
-    setEchoMode( QLineEdit::Normal );
-    mActionShowHidePassword->setIcon( mHidePasswordIcon );
-    mActionShowHidePassword->setToolTip( tr( "Hide text" ) );
-  }
-  else
-  {
-    setEchoMode( QLineEdit::Password );
-    mActionShowHidePassword->setIcon( mShowPasswordIcon );
-    mActionShowHidePassword->setToolTip( tr( "Show text" ) );
-  }
+  QSize sz = btnToggle->sizeHint();
+  int frameWidth = style()->pixelMetric( QStyle::PM_DefaultFrameWidth );
+  btnToggle->move( rect().right() - frameWidth - sz.width(),
+                  ( rect().bottom() + 1 - sz.height() ) / 2 );
 }
 
-void QgsPasswordLineEdit::setShowLockIcon( bool visible )
+void QgsPasswordLineEdit::togglePassword( bool toggled )
 {
-  mLockIconVisible = visible;
-  if ( mLockIconVisible )
-  {
-    if ( !mActionLock )
-    {
-      mActionLock = addAction( QgsApplication::getThemeIcon( "/lockedGray.svg" ), QLineEdit::LeadingPosition );
-    }
-  }
-  else
-  {
-    if ( mActionLock )
-    {
-      removeAction( mActionLock );
-      mActionLock = nullptr;
-    }
-  }
+  setEchoMode(toggled ? QLineEdit::Normal : QLineEdit::Password);
+  btnToggle->setIcon( toggled ? mShownIcon : mHiddenIcon );
 }

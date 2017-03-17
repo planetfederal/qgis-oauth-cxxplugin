@@ -1,9 +1,12 @@
 /***************************************************************************
-                              qgspasswordlineedit.h
+                              qgspasswordineedit.h
                               ------------------------
-  begin                : March 13, 2017
-  copyright            : (C) 2017 by Alexander Bruy
-  email                : alexander dot bruy at gmail dot com
+  begin                : August 03, 2016
+  copyright            : (C) 2016 by Boundless Spatial, Inc. USA
+  author               : Larry Shaffer
+  email                : lshaffer at boundlessgeo dot com
+
+  based on             : QgsPasswordLineEdit by Alex Bruy
  ***************************************************************************/
 
 /***************************************************************************
@@ -19,51 +22,32 @@
 #define QGSPASSWORDLINEEDIT_H
 
 #include <QLineEdit>
-#include <QAction>
+#include <QIcon>
 
-#include "qgis_gui.h"
 
-/** \class QgsPasswordLineEdit
- * \ingroup gui
- * QLineEdit subclass with built in support for showing/hiding
- * entered password.
- * @note added in QGIS 3.0
+class QToolButton;
+
+/** \ingroup gui
+ * Lineedit with password show toggle button
  **/
-class GUI_EXPORT QgsPasswordLineEdit : public QLineEdit
+class QgsPasswordLineEdit : public QLineEdit
 {
-    Q_OBJECT
-    Q_PROPERTY( bool showLockIcon READ showLockIcon WRITE setShowLockIcon )
+  Q_OBJECT
 
   public:
+    QgsPasswordLineEdit( QWidget* parent = nullptr );
 
-    /** Constructor for QgsPasswordLineEdit.
-     * @param parent parent widget
-     * @param passwordVisible Initial state of the password's visibility
-     */
-    QgsPasswordLineEdit( QWidget *parent = nullptr, bool passwordVisible = false );
+  protected:
+    void resizeEvent( QResizeEvent* e ) override;
 
-    /** Define if a lock icon shall be shown on the left of the widget
-     * @param visible set to false to hide the lock icon
-     */
-    void setShowLockIcon( bool visible );
-
-    /** Returns if a lock icon shall be shown on the left of the widget
-     */
-    bool showLockIcon() const { return mLockIconVisible; }
-
-  public slots:
-    void togglePasswordVisibility( bool toggled );
+  private slots:
+    void togglePassword( bool toggled );
 
   private:
-
-    QAction *mActionShowHidePassword = nullptr;
-    QAction *mActionLock = nullptr;
-
-    QIcon mShowPasswordIcon;
-    QIcon mHidePasswordIcon;
-
-    bool mLockIconVisible;
-    QSize mIconsSize;
+    QToolButton *btnToggle;
+    QString mStyleSheet;
+    QIcon mHiddenIcon;
+    QIcon mShownIcon;
 };
 
 #endif // QGSPASSWORDLINEEDIT_H
