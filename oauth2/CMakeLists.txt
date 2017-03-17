@@ -2,16 +2,40 @@
 
 ########################################################
 # Packages
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-if(NOT ${ENABLE_QT5})
-  set(QT_USE_QTSCRIPT 1)
-  include(${QT_USE_FILE})
-  find_package(QJSON REQUIRED)
-endif(NOT ${ENABLE_QT5})
+IF(QGIS_APP_NAME)
+  #message(STATUS "Building OAuth2 plugin in QGIS src tree")
+  # we are in QGIS src tree
+  SET(IN_QGIS_SRC TRUE)
+  #use its version
+  SET(QGIS_VERSION "${COMPLETE_VERSION}")
+ENDIF()
 
-find_package(QCA REQUIRED)
-find_package(O2 REQUIRED)
+IF(NOT QGIS_VERSION)
+  MESSAGE(FATAL_ERROR "QGIS_VERSION undetermined")
+ENDIF()
+
+IF(IN_QGIS_SRC AND "${QGIS_VERSION}" VERSION_LESS "2.99.0")
+  SET(QGIS2 TRUE)
+  MESSAGE(STATUS "QGIS target version for OAuth2 plugin set to 2.x")
+ELSE()
+  SET(QGIS2 FALSE)
+  MESSAGE(STATUS "QGIS target version for OAuth2 plugin set to 3.x")
+ENDIF()
+
+IF(QGIS2)
+  SET(QT_USE_QTSCRIPT 1)
+  INCLUDE(${QT_USE_FILE})
+  IF(NOT QJSON_FOUND)
+    FIND_PACKAGE(QJSON REQUIRED)
+  ENDIF()
+ENDIF()
+
+IF(NOT QCA_FOUND)
+  FIND_PACKAGE(QCA REQUIRED)
+ENDIF()
+FIND_PACKAGE(O2 REQUIRED)
 
 ########################################################
 # Files
@@ -39,12 +63,12 @@ SET(OAUTH2_MOC_HDRS
   qgsauthoauth2edit.h
 )
 
-IF(NOT ${ENABLE_QT5})
+IF(QGIS2)
   # QgsPasswordLineEdit is in QGIS 2.99 at 85776a1
   SET(OAUTH2_SRCS ${OAUTH2_SRCS} qgis2-ui/qgspasswordlineedit.cpp)
   SET(OAUTH2_HDRS ${OAUTH2_HDRS} qgis2-ui/qgspasswordlineedit.h)
   SET(OAUTH2_MOC_HDRS ${OAUTH2_MOC_HDRS} qgis2-ui/qgspasswordlineedit.h)
-ENDIF(NOT ${ENABLE_QT5})
+ENDIF()
 
 SET(OAUTH2_UIS qgsauthoauth2edit.ui)
 
@@ -59,17 +83,17 @@ INCLUDE_DIRECTORIES (SYSTEM
   ${QCA_INCLUDE_DIR}
   ${O2_INCLUDE_DIR}
 )
-if(NOT ${ENABLE_QT5})
+IF(QGIS2)
   INCLUDE_DIRECTORIES (SYSTEM
     ${QJSON_INCLUDE_DIR}
   )
   INCLUDE_DIRECTORIES (
     qgis2-ui
   )
-endif()
+ENDIF()
 
-IF(WITH_DESKTOP)
-  ### start: when in src/auth ###
+IF(IN_QGIS_SRC)
+  ### start: when in QGIS/src/auth ###
   INCLUDE_DIRECTORIES (
     ${CMAKE_SOURCE_DIR}/src/core
     ${CMAKE_SOURCE_DIR}/src/core/auth
@@ -83,8 +107,8 @@ IF(WITH_DESKTOP)
     ${CMAKE_BINARY_DIR}/src/ui/auth
     ${CMAKE_BINARY_DIR}/src/auth/oauth2
   )
-  ### end: when in src/auth ###
-ELSE(WITH_DESKTOP)
+  ### end: when in QGIS/src/auth ###
+ELSE(IN_QGIS_SRC)
   ### start: when standalone ###
   INCLUDE_DIRECTORIES (SYSTEM
     ${Qt5Sql_INCLUDE_DIRS}
@@ -92,7 +116,7 @@ ELSE(WITH_DESKTOP)
     ${QGIS_INCLUDE_DIR}
   )
   ### end: when standalone ###
-ENDIF(WITH_DESKTOP)
+ENDIF(IN_QGIS_SRC)
 
 
 QT4_WRAP_UI(OAUTH2_UIS_H ${OAUTH2_UIS})
@@ -126,22 +150,22 @@ ELSE()
   SET(OAUTH2_TARGET_LIBS ${O2_LIBRARY})
 ENDIF()
 
-if(NOT ${ENABLE_QT5})
+IF(QGIS2)
   SET(OAUTH2_TARGET_LIBS
     ${QT_QTSCRIPT_LIBRARY}
     ${QJSON_LIBRARIES}
     ${OAUTH2_TARGET_LIBS}
   )
-endif()
+ENDIF()
 
-IF(WITH_DESKTOP)
+IF(IN_QGIS_SRC)
   # in QGIS source tree
   SET(OAUTH2_TARGET_LIBS
     qgis_core
     qgis_gui
     ${OAUTH2_TARGET_LIBS}
   )
-ELSE(WITH_DESKTOP)
+ELSE(IN_QGIS_SRC)
   # outside QGIS source tree
   SET(OAUTH2_TARGET_LIBS
     ${QGIS_CORE_LIBRARY}
@@ -154,7 +178,7 @@ ELSE(WITH_DESKTOP)
     ${QT_QTSVG_LIBRARY}
     ${OAUTH2_TARGET_LIBS}
   )
-ENDIF(WITH_DESKTOP)
+ENDIF(IN_QGIS_SRC)
 
 TARGET_LINK_LIBRARIES (oauth2authmethod
   ${OAUTH2_TARGET_LIBS}
