@@ -41,6 +41,44 @@ option(ENABLE_TESTS "Enable building of unit tests" ON)
 
 option(BUILD_TEST_APP "Build test app" OFF)
 
+
+# Find QGIS
+# help find custom locations
+if(APPLE)
+  set(QGIS_PREFIX_PATH "/Applications" CACHE STRING "macOS QGIS application install prefix")
+
+  #this will define ${APP_SERVICES_LIBRARY}
+  find_library(APP_SERVICES_LIBRARY ApplicationServices )
+  if(EXISTS "${QGIS_PREFIX_PATH}/CMakeCache.txt")
+    set(QGIS_BUILD_PATH "${QGIS_PREFIX_PATH}")
+    add_definitions("-DQGIS_BUILD_PATH=\"${QGIS_BUILD_PATH}\"")
+  elseif(EXISTS "${QGIS_PREFIX_PATH}/QGIS.app")
+    set(QGIS_MAC_PATH "${QGIS_PREFIX_PATH}/QGIS.app/Contents")
+  endif()
+  if (USE_CXX_11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=c++11-narrowing -Wno-return-type-c-linkage")
+  endif ()
+elseif(MSVC)
+  # or C:/PROGRA~1/Boundless/Desktop/osgeo4w
+  set(OSGEO4W_ROOT_DIR "C:/OSGeo4W64" CACHE STRING "OSGeo4W root install prefix")
+  set(ENV{OSGEO4W_ROOT} $OSGEO4W_ROOT_DIR)
+endif()
+
+find_package(QGIS REQUIRED)
+
+if(NOT QGIS_PLUGIN_DIR)
+  message(WARNING "Couldn't find QGIS_PLUGIN_DIR; install may fail")
+endif()
+
+if("${QGIS_VERSION}" VERSION_LESS "2.99.0")
+  set(QGIS2 TRUE)
+  message(STATUS "QGIS target version set to 2.x")
+else()
+  set(QGIS2 FALSE)
+  message(STATUS "QGIS target version set to 3.x")
+endif()
+
+
 # Qt find routines from QGIS 2.14.3 code base
 set(QT_MIN_VERSION 4.8.0)
 
@@ -49,8 +87,7 @@ if(WITH_QTWEBKIT)
   add_definitions(-DWITH_QTWEBKIT)
 endif()
 
-set(ENABLE_QT5 FALSE CACHE BOOL "If enabled will try to find Qt5 before looking for Qt4")
-if(ENABLE_QT5)
+if(NOT QGIS2)
   find_package(Qt5Core QUIET)
   find_package(Qt5Gui REQUIRED)
   find_package(Qt5Widgets REQUIRED)
@@ -90,45 +127,22 @@ endif()
 
 find_package(QCA REQUIRED)
 
-if(APPLE)
-  set(QGIS_PREFIX_PATH "/Applications" CACHE STRING "macOS QGIS application install prefix")
-
-  #this will define ${APP_SERVICES_LIBRARY}
-  find_library(APP_SERVICES_LIBRARY ApplicationServices )
-  if(EXISTS "${QGIS_PREFIX_PATH}/CMakeCache.txt")
-    set(QGIS_BUILD_PATH "${QGIS_PREFIX_PATH}")
-    add_definitions("-DQGIS_BUILD_PATH=\"${QGIS_BUILD_PATH}\"")
-  elseif(EXISTS "${QGIS_PREFIX_PATH}/QGIS.app")
-    set(QGIS_MAC_PATH "${QGIS_PREFIX_PATH}/QGIS.app/Contents")
-  endif()
-  if (USE_CXX_11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=c++11-narrowing -Wno-return-type-c-linkage")
-  endif ()
-elseif(MSVC)
-  # or C:/PROGRA~1/Boundless/Desktop/osgeo4w
-  set(OSGEO4W_ROOT_DIR "C:/OSGeo4W64" CACHE STRING "OSGeo4W root install prefix")
-  set(ENV{OSGEO4W_ROOT} $OSGEO4W_ROOT_DIR)
+if(QGIS2)
+  # export headers (e.g. qgis_core.h) are now used in QGIS 2.99+
+  if(WIN32)
+    set(DLLIMPORT "__declspec(dllimport)")
+    set(DLLEXPORT "__declspec(dllexport)")
+  else (WIN32)
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+      set(DLLEXPORT "__attribute__ ((visibility (\\\"default\\\")))")
+    else()
+      set(DLLEXPORT "")
+    endif()
+  endif(WIN32)
+  add_definitions("-DCORE_EXPORT=${DLLIMPORT}")
+  add_definitions("-DGUI_EXPORT=${DLLIMPORT}")
+  add_definitions("-DAPP_EXPORT=${DLLIMPORT}")
 endif()
-
-find_package(QGIS REQUIRED)
-
-if(NOT QGIS_PLUGIN_DIR)
-  message(WARNING "Couldn't find QGIS_PLUGIN_DIR; install may fail")
-endif()
-
-if(WIN32)
-  set(DLLIMPORT "__declspec(dllimport)")
-  set(DLLEXPORT "__declspec(dllexport)")
-else (WIN32)
-  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(DLLEXPORT "__attribute__ ((visibility (\\\"default\\\")))")
-  else()
-    set(DLLEXPORT "")
-  endif()
-endif(WIN32)
-add_definitions("-DCORE_EXPORT=${DLLIMPORT}")
-add_definitions("-DGUI_EXPORT=${DLLIMPORT}")
-add_definitions("-DAPP_EXPORT=${DLLIMPORT}")
 
 add_subdirectory(oauth2)
 
