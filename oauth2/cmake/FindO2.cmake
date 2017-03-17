@@ -29,7 +29,7 @@ FIND_LIBRARY(O2_LIBRARY NAMES o2
   "$ENV{LIB_DIR}/lib"
   "$ENV{LIB}"
   )
-FIND_LIBRARY(O2_LIBRARY_STATIC NAMES libo2.a libo2_static.a
+FIND_LIBRARY(O2_LIBRARY_STATIC NAMES libo2.a libo2_static.a o2_static
   PATHS
   /usr/local/lib
   /usr/lib
