@@ -30,10 +30,12 @@ endif()
 option(USE_CXX_11 "Enable C++11 compiler support" ON)
 
 #allow override keyword if available
-if (NOT USE_CXX_11)
+if(USE_CXX_11)
+  set(CMAKE_CXX_STANDARD 11)
+else()
   add_definitions("-Doverride=")
   add_definitions("-Dnullptr=0")
-ENDIF()
+endif()
 
 option(ENABLE_TESTS "Enable building of unit tests" ON)
 
@@ -100,8 +102,7 @@ if(APPLE)
     set(QGIS_MAC_PATH "${QGIS_PREFIX_PATH}/QGIS.app/Contents")
   endif()
   if (USE_CXX_11)
-    # allow c++11
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wno-error=c++11-narrowing -Wno-return-type-c-linkage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=c++11-narrowing -Wno-return-type-c-linkage")
   endif ()
 elseif(MSVC)
   # or C:/PROGRA~1/Boundless/Desktop/osgeo4w
