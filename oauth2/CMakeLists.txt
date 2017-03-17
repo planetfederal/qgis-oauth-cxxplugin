@@ -114,10 +114,13 @@ ADD_LIBRARY (oauth2authmethod_static STATIC
   ${OAUTH2_UIS_H}
 )
 
-# Shared linked libs
-SET(OAUTH2_TARGET_LIBS
-  ${O2_LIBRARY}
-)
+# Common linked libs
+IF(EXISTS ${O2_LIBRARY_STATIC})
+  # prefer static linking, so newer o2 lib does not need separately packaged
+  SET(OAUTH2_TARGET_LIBS ${O2_LIBRARY_STATIC})
+ELSE()
+  SET(OAUTH2_TARGET_LIBS ${O2_LIBRARY})
+ENDIF()
 
 if(NOT ENABLE_QT5)
   SET(OAUTH2_TARGET_LIBS
