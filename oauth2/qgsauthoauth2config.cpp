@@ -349,7 +349,7 @@ bool QgsAuthOAuth2Config::loadConfigTxt(
 
   if ( format == JSON )
   {
-    QVariant variant = QJsonWrapper::parseJson( configtxt, errStr, &res );
+    QVariant variant = QJsonWrapper::parseJson( configtxt, &res, &errStr );
     if ( !res )
     {
       QgsDebugMsg( QStringLiteral( "Error parsing JSON: %1" ).arg( QString( errStr ) ) );
@@ -381,7 +381,7 @@ QByteArray QgsAuthOAuth2Config::saveConfigTxt(
   if ( format == JSON )
   {
     QVariantMap variant = QJsonWrapper::qobject2qvariant( this );
-    out = QJsonWrapper::toJson( variant, errStr, pretty, &res );
+    out = QJsonWrapper::toJson( variant, &res, &errStr, pretty );
     if ( !res )
     {
       QgsDebugMsg( QStringLiteral( "Error serializing JSON: %1" ).arg( QString( errStr ) ) );
@@ -438,7 +438,7 @@ QByteArray QgsAuthOAuth2Config::serializeFromVariant(
 
   if ( format == JSON )
   {
-    out = QJsonWrapper::toJson( variant, errStr, pretty, &res );
+    out = QJsonWrapper::toJson( variant, &res, &errStr, pretty );
     if ( !res )
     {
       QgsDebugMsg( QStringLiteral( "Error serializing JSON: %1" ).arg( QString( errStr ) ) );
@@ -465,7 +465,7 @@ QVariantMap QgsAuthOAuth2Config::variantFromSerialized(
 
   if ( format == JSON )
   {
-    QVariant var = QJsonWrapper::parseJson( serial, errStr, &res );
+    QVariant var = QJsonWrapper::parseJson( serial, &res, &errStr );
     if ( !res )
     {
       QgsDebugMsg( QStringLiteral( "Error parsing JSON to variant: %1" ).arg( QString( errStr ) ) );
