@@ -35,7 +35,14 @@ ENDIF()
 IF(NOT QCA_FOUND)
   FIND_PACKAGE(QCA REQUIRED)
 ENDIF()
-FIND_PACKAGE(O2 REQUIRED)
+
+OPTION(WITH_SYSTEM_O2 "Use system o2 library instead of building as external project" ON)
+
+IF(WITH_SYSTEM_O2)
+  FIND_PACKAGE(O2 REQUIRED)
+ELSE()
+  INCLUDE(External_O2)
+ENDIF()
 
 ########################################################
 # Files
@@ -72,7 +79,7 @@ ENDIF()
 
 SET(OAUTH2_UIS qgsauthoauth2edit.ui)
 
-SET(OAUTH2_RCCS  oauth2_resources.qrc)
+SET(OAUTH2_RCCS oauth2_resources.qrc)
 
 # Common includes
 INCLUDE_DIRECTORIES (
@@ -143,12 +150,14 @@ ADD_LIBRARY (oauth2authmethod_static STATIC
 )
 
 # Common linked libs
-IF(EXISTS ${O2_LIBRARY_STATIC})
+IF(NOT "${O2_LIBRARY_STATIC}" STREQUAL "")
   # prefer static linking, so newer o2 lib does not need separately packaged
   SET(OAUTH2_TARGET_LIBS ${O2_LIBRARY_STATIC})
 ELSE()
   SET(OAUTH2_TARGET_LIBS ${O2_LIBRARY})
 ENDIF()
+
+#message(STATUS "OAUTH2_TARGET_LIBS: ${OAUTH2_TARGET_LIBS}")
 
 IF(QGIS2)
   SET(OAUTH2_TARGET_LIBS
@@ -186,6 +195,11 @@ TARGET_LINK_LIBRARIES (oauth2authmethod
 TARGET_LINK_LIBRARIES (oauth2authmethod_static
   ${OAUTH2_TARGET_LIBS}
 )
+
+IF(NOT WITH_SYSTEM_O2)
+  ADD_DEPENDENCIES(oauth2authmethod external_o2)
+  ADD_DEPENDENCIES(oauth2authmethod_static external_o2)
+ENDIF()
 
 # don't install static variant, as it's only for unit testing from build directory
 INSTALL(TARGETS oauth2authmethod
