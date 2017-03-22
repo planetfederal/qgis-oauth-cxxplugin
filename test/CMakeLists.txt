@@ -53,6 +53,13 @@ macro (ADD_QGIS_TEST testname testsrc)
   if(APPLE)
     target_link_libraries(qgis_${testname} ${APP_SERVICES_LIBRARY})
   endif(APPLE)
+  if(EXISTS ${O2_LIBRARY_STATIC})
+    # prefer static linking, so newer o2 lib does not need separately packaged
+    # already linked in oauth2authmethod_static
+    set(_o2_test_lib)
+  else()
+    set(_o2_test_lib ${O2_LIBRARY})
+  endif()
   target_link_libraries(qgis_${testname}    
     ${QGIS_CORE_LIBRARY}
     ${QGIS_GUI_LIBRARY}
@@ -63,7 +70,7 @@ macro (ADD_QGIS_TEST testname testsrc)
     ${QT_QTWEBKIT_LIBRARY}
     ${QT_QTMAIN_LIBRARY}
     ${QT_QTTEST_LIBRARY}
-    ${O2_LIBRARY}
+    ${_o2_test_lib}
     ${QJSON_LIBRARIES}
     oauth2authmethod_static
     )
