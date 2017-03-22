@@ -4,4 +4,6 @@
 #define QGIS_LOG_FILE "${QGIS_LOG_FILE}"
 #define QGIS_BUILD_PATH "${QGIS_BUILD_PATH}"
 
+#cmakedefine QGIS2
+
 #endif // OAUTH_TEST_APP_CONFIG.H

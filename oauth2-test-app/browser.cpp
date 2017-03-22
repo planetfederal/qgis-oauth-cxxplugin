@@ -133,7 +133,11 @@ bool WebBrowser::initQGIS()
   QgsDebugMsg( "Checking database" );
   // Do this early on before anyone else opens it and prevents us copying it
   QString dbError;
+#ifdef QGIS_2
   if ( !QgsApplication::createDB( &dbError ) )
+#else
+  if ( !QgsApplication::createDatabase( &dbError ) )
+#endif
   {
     QgsDebugMsg( "Private qgis.db!" );
     return false;

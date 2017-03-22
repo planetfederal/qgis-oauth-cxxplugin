@@ -24,8 +24,11 @@
 #include "qgsauthmethodedit.h"
 #include "qgsauthmethodregistry.h"
 #include "qgslogger.h"
-#include "qgsmaplayerregistry.h"
 #include "qgsproviderregistry.h"
+
+#ifdef QGIS_2
+#include "qgsmaplayerregistry.h"
+#endif
 
 #include <cstdio>
 #include <stdio.h>
@@ -67,10 +70,10 @@ int main( int argc, char *argv[] )
 #else
     setenv( "QGIS_LOG_FILE", QGIS_LOG_FILE, 1 );
 #endif
-          }
+  }
 #endif
 
-          QString qgis_prefix( "" );
+  QString qgis_prefix( "" );
 #ifdef QGIS_BUILD_PATH
   QString build_path( QGIS_BUILD_PATH );
   if ( !build_path.isEmpty() )
@@ -92,9 +95,9 @@ int main( int argc, char *argv[] )
 #else
     setenv( "QGIS_PREFIX_PATH", qgis_prefix.toUtf8().constData(), 1 );
 #endif
-          }
+  }
 
-          QgsApplication app( argc, argv, true );
+  QgsApplication app( argc, argv, true );
 
   QCoreApplication::setOrganizationName( QgsApplication::QGIS_ORGANIZATION_NAME );
   QCoreApplication::setOrganizationDomain( QgsApplication::QGIS_ORGANIZATION_DOMAIN );
