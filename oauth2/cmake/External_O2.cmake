@@ -8,6 +8,12 @@ set(_o2_git_branch "o2-monsanto-features")
 
 set(_o2_prefix ${CMAKE_CURRENT_BINARY_DIR}/o2)
 
+if(QGIS2)
+  set(_with_qt5 OFF)
+else()
+  set(_with_qt5 ON)
+endif()
+
 if(MSVC)
   # TODO: ExternalProject_Add(EXTERNAL_O2 ... )
 
@@ -26,7 +32,7 @@ else(UNIX)
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
     -DBUILD_SHARED_LIBS:BOOL=OFF
-    -Do2_WITH_QT5:BOOL=ON
+    -Do2_WITH_QT5:BOOL=${_with_qt5}
     LOG_DOWNLOAD 1
     LOG_CONFIGURE 1
     LOG_BUILD 1
