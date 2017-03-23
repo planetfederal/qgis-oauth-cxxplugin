@@ -196,7 +196,7 @@ TARGET_LINK_LIBRARIES (oauth2authmethod_static
   ${OAUTH2_TARGET_LIBS}
 )
 
-IF(NOT WITH_SYSTEM_O2)
+IF(NOT WITH_INTERNAL_O2)
   ADD_DEPENDENCIES(oauth2authmethod external_o2)
   ADD_DEPENDENCIES(oauth2authmethod_static external_o2)
 ENDIF()
