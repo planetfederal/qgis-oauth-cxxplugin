@@ -127,7 +127,7 @@ endif()
 
 find_package(QCA REQUIRED)
 
-if(QGIS2)
+#if(QGIS2)
   # export headers (e.g. qgis_core.h) are now used in QGIS 2.99+
   if(WIN32)
     set(DLLIMPORT "__declspec(dllimport)")
@@ -142,7 +142,7 @@ if(QGIS2)
   add_definitions("-DCORE_EXPORT=${DLLIMPORT}")
   add_definitions("-DGUI_EXPORT=${DLLIMPORT}")
   add_definitions("-DAPP_EXPORT=${DLLIMPORT}")
-endif()
+#endif()
 
 add_subdirectory(oauth2)
 

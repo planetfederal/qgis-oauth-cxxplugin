@@ -120,8 +120,13 @@ WebBrowser::~WebBrowser()
 bool WebBrowser::initQGIS()
 {
   QgsDebugMsg( "Setting up network access manager" );
+#ifdef QGIS2
   mNam = new QgsNetworkAccessManager( qApp );
   mNam->setupDefaultProxyAndCache();
+#else
+  mNam = new QgsNetworkAccessManager( qApp );
+  mNam = QgsNetworkAccessManager::instance();
+#endif
 
   connect( mNam, SIGNAL( finished( QNetworkReply* ) ),
            this, SLOT( requestReply( QNetworkReply* ) ) );
