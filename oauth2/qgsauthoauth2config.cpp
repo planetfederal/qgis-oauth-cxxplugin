@@ -90,8 +90,7 @@ QgsAuthOAuth2Config::QgsAuthOAuth2Config( QObject *parent )
 
   // always recheck validity on any change
   // this, in turn, may emit validityChanged( bool )
-  connect( this, SIGNAL( configChanged() ), this, SLOT( validateConfig() ) );
-//  connect( this, &QgsAuthOAuth2Config::configChanged, this, &QgsAuthOAuth2Config::validateConfig );
+  connect( this, &QgsAuthOAuth2Config::configChanged, this, &QgsAuthOAuth2Config::validateConfig );
 #endif
 
   validateConfig();
@@ -317,7 +316,13 @@ bool QgsAuthOAuth2Config::isValid() const
 }
 
 // slot
-void QgsAuthOAuth2Config::validateConfig( bool needsId )
+void QgsAuthOAuth2Config::validateConfig()
+{
+  validateConfigId( false );
+}
+
+// public
+void QgsAuthOAuth2Config::validateConfigId( bool needsId )
 {
   bool oldvalid = mValid;
 

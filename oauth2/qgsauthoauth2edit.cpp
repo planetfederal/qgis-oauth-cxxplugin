@@ -86,7 +86,11 @@ void QgsAuthOAuth2Edit::initGui()
   btnTokenClear->setToolButtonStyle( Qt::ToolButtonTextBesideIcon );
   btnTokenClear->setEnabled( hasTokenCacheFile() );
 
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
   connect( btnTokenClear, SIGNAL( clicked() ), this, SLOT( removeTokenCacheFile() ) );
+#else
+  connect( btnTokenClear, &QToolButton::clicked, this, &QgsAuthOAuth2Edit::removeTokenCacheFile );
+#endif
   tabConfigs->setCornerWidget( btnTokenClear, Qt::TopRightCorner );
 }
 
@@ -139,6 +143,7 @@ QString QgsAuthOAuth2Edit::parentConfigId() const
 // slot
 void QgsAuthOAuth2Edit::setupConnections()
 {
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
   // Action and interaction connections
   connect( tabConfigs, SIGNAL( currentChanged( int ) ),
            this, SLOT( tabIndexChanged( int ) ) );
@@ -208,6 +213,53 @@ void QgsAuthOAuth2Edit::setupConnections()
     connect( mParentName, SIGNAL( textChanged( const QString & ) ),
              this, SLOT( configValidityChanged() ) );
   }
+#else
+  // Action and interaction connections
+  connect( tabConfigs, &QTabWidget::currentChanged, this, &QgsAuthOAuth2Edit::tabIndexChanged );
+
+  connect( btnExport, &QToolButton::clicked, this, &QgsAuthOAuth2Edit::exportOAuthConfig );
+  connect( btnImport, &QToolButton::clicked, this, &QgsAuthOAuth2Edit::importOAuthConfig );
+
+  connect( tblwdgQueryPairs, &QTableWidget::itemSelectionChanged, this, &QgsAuthOAuth2Edit::queryTableSelectionChanged );
+
+  connect( btnAddQueryPair, &QToolButton::clicked, this, &QgsAuthOAuth2Edit::addQueryPair );
+  connect( btnRemoveQueryPair, &QToolButton::clicked, this, &QgsAuthOAuth2Edit::removeQueryPair );
+
+  connect( lstwdgDefinedConfigs, &QListWidget::currentItemChanged, this, &QgsAuthOAuth2Edit::currentDefinedItemChanged );
+
+  connect( btnGetDefinedDirPath, &QToolButton::clicked, this, &QgsAuthOAuth2Edit::getDefinedCustomDir );
+  connect( leDefinedDirPath, &QLineEdit::textChanged, this, &QgsAuthOAuth2Edit::definedCustomDirChanged );
+
+  // Custom config editing connections
+  connect( cmbbxGrantFlow, static_cast<void ( QComboBox::* )( int )>( &QComboBox::currentIndexChanged ),
+           this, &QgsAuthOAuth2Edit::updateGrantFlow ); // also updates GUI
+  connect( pteDescription, &QPlainTextEdit::textChanged, this, &QgsAuthOAuth2Edit::descriptionChanged );
+  connect( leRequestUrl, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setRequestUrl );
+  connect( leTokenUrl, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setTokenUrl );
+  connect( leRefreshTokenUrl, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setRefreshTokenUrl );
+  connect( leRedirectUrl, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setRedirectUrl );
+  connect( spnbxRedirectPort, static_cast<void ( QSpinBox::* )( int )>( &QSpinBox::valueChanged ),
+           mOAuthConfigCustom, &QgsAuthOAuth2Config::setRedirectPort );
+  connect( leClientId, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setClientId );
+  connect( leClientSecret, &QgsPasswordLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setClientSecret );
+  connect( leUsername, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setUsername );
+  connect( lePassword, &QgsPasswordLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setPassword );
+  connect( leScope, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setScope );
+  connect( leState, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setState );
+  connect( leApiKey, &QLineEdit::textChanged, mOAuthConfigCustom, &QgsAuthOAuth2Config::setApiKey );
+  connect( chkbxTokenPersist, &QCheckBox::toggled, mOAuthConfigCustom, &QgsAuthOAuth2Config::setPersistToken );
+  connect( cmbbxAccessMethod, static_cast<void ( QComboBox::* )( int )>( &QComboBox::currentIndexChanged ),
+           this, &QgsAuthOAuth2Edit::updateConfigAccessMethod );
+  connect( spnbxRequestTimeout, static_cast<void ( QSpinBox::* )( int )>( &QSpinBox::valueChanged ),
+           mOAuthConfigCustom, &QgsAuthOAuth2Config::setRequestTimeout );
+
+  connect( mOAuthConfigCustom, &QgsAuthOAuth2Config::validityChanged, this, &QgsAuthOAuth2Edit::configValidityChanged );
+
+  if ( mParentName )
+  {
+    connect( mParentName, &QLineEdit::textChanged, this, &QgsAuthOAuth2Edit::configValidityChanged );
+  }
+#endif
 }
 
 // slot

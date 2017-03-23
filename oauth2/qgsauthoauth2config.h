@@ -165,6 +165,9 @@ class QgsAuthOAuth2Config : public QObject
     //! Check whether config is valid, then return it
     bool isValid() const;
 
+    //! @see http://tools.ietf.org/html/rfc6749 for required data per flow
+    void validateConfigId( bool needsId = false );
+
     //! Load a string (e.g. JSON) of a config
     bool loadConfigTxt( const QByteArray &configtxt, ConfigFormat format = JSON );
 
@@ -259,8 +262,7 @@ class QgsAuthOAuth2Config : public QObject
 
     void setToDefaults();
 
-    //! @see http://tools.ietf.org/html/rfc6749 for required data per flow
-    void validateConfig( bool needsId = false );
+    void validateConfig();
 
   signals:
     void configChanged();
