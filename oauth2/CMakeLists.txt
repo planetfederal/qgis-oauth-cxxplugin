@@ -36,12 +36,12 @@ IF(NOT QCA_FOUND)
   FIND_PACKAGE(QCA REQUIRED)
 ENDIF()
 
-OPTION(WITH_SYSTEM_O2 "Use system o2 library instead of building as external project" ON)
+OPTION(WITH_INTERNAL_O2 "Locally build o2 library as external project" ON)
 
-IF(WITH_SYSTEM_O2)
-  FIND_PACKAGE(O2 REQUIRED)
-ELSE()
+IF(WITH_INTERNAL_O2)
   INCLUDE(External_O2)
+ELSE()
+  FIND_PACKAGE(O2 REQUIRED)
 ENDIF()
 
 ########################################################
