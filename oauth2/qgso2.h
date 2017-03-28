@@ -1,7 +1,7 @@
 /***************************************************************************
     begin                : August 1, 2016
-    copyright            : (C) 2016 by Boundless Spatial, Inc. USA
-    author               : Larry Shaffer
+    copyright            : (C) 2016 by Monsanto Company, USA
+    author               : Larry Shaffer, Boundless Spatial
     email                : lshaffer at boundlessgeo dot com
  ***************************************************************************
  *                                                                         *
@@ -19,7 +19,10 @@
 
 class QgsAuthOAuth2Config;
 
-/// QGIS-specific subclass of O2 lib's base OAuth 2.0 authenticator
+/**
+ * QGIS-specific subclass of O2 lib's base OAuth 2.0 authenticator.
+ * Adds support for QGIS authentication system.
+ */
 class QgsO2: public O2
 {
 

@@ -1,6 +1,7 @@
 # Find O2
 # ~~~~~~~~~
-# Copyright (c) 2016, Larry Shaffer lshaffer-at-boundlessgeo-com
+# Copyright (c) 2016, Monsanto Company, USA
+# Author: Larry Shaffer, <lshaffer (at) boundlessgeo (dot) com>
 #
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.

@@ -1,5 +1,16 @@
+# External Project for o2 Library
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Copyright (c) 2017, Larry Shaffer, <lshaffer (at) boundlessgeo (dot) com>
+#
+# Builds a static o2 library
+# Official source code repository: https://github.com/pipacs/o2
+#
+# Redistribution and use is allowed according to the terms of the BSD license.
+# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 include(ExternalProject)
 
+# NOTE: These are temporary source code provenance endpoints, until necessary
+#       commits are done upstream to support the OAuth2 plugin
 set(_o2_url "https://github.com/MonsantoCo/o2/archive/o2-monsanto-features.tar.gz")
 set(_o2_md5 e8cfe993e0312180423101f879db4fa7)
 
@@ -41,6 +52,7 @@ else(UNIX)
   set(_o2_static_lib libo2.a)
 endif()
 
+# These match variables set by FindO2.cmake
 set(O2_INCLUDE_DIR ${_o2_prefix}/include/o2 CACHE INTERNAL "Path to o2 library headers" FORCE)
 set(O2_LIBRARY "" CACHE INTERNAL "Path to o2 shared library" FORCE)
 set(O2_LIBRARY_STATIC ${_o2_prefix}/lib/${_o2_static_lib} CACHE INTERNAL "Path to o2 static library" FORCE)

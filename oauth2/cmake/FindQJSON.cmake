@@ -1,5 +1,8 @@
 # Find QJSON - JSON handling library for Qt
 #
+# Copyright (c) 2016, Monsanto Company, USA
+# Author: Larry Shaffer, <lshaffer (at) boundlessgeo (dot) com>
+#
 # Culled from QJson 0.7.1 release
 #
 # This module defines
@@ -7,6 +10,8 @@
 #  QJSON_LIBRARIES - the qjson library
 #  QJSON_INCLUDE_DIR - the include path of the qjson library
 #
+# Redistribution and use is allowed according to the terms of the BSD license.
+# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
 if (QJSON_INCLUDE_DIR AND QJSON_LIBRARIES)
 

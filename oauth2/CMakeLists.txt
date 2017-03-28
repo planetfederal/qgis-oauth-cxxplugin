@@ -201,6 +201,8 @@ IF(WITH_INTERNAL_O2)
   ADD_DEPENDENCIES(oauth2authmethod_static external_o2)
 ENDIF()
 
+########################################################
+# Install
 # don't install static variant, as it's only for unit testing from build directory
 INSTALL(TARGETS oauth2authmethod
   RUNTIME DESTINATION ${QGIS_PLUGIN_DIR}

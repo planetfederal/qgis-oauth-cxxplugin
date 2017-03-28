@@ -1,7 +1,7 @@
 /***************************************************************************
     begin                : August 1, 2016
-    copyright            : (C) 2016 by Boundless Spatial, Inc. USA
-    author               : Larry Shaffer
+    copyright            : (C) 2016 by Monsanto Company, USA
+    author               : Larry Shaffer, Boundless Spatial
     email                : lshaffer at boundlessgeo dot com
  ***************************************************************************
  *                                                                         *
