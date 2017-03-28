@@ -74,7 +74,7 @@ class QgsAuthOAuth2Method : public QgsAuthMethod
 
     void removeOAuth2Bundle( const QString &authcfg );
 
-    static QMap<QString, QgsO2*> smOAuth2ConfigCache;
+    static QMap<QString, QgsO2*> sOAuth2ConfigCache;
 
     QgsO2* authO2( const QString &authcfg );
 };

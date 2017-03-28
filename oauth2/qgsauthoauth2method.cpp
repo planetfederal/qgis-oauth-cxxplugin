@@ -38,7 +38,7 @@
 static const QString AUTH_METHOD_KEY = QStringLiteral( "OAuth2" );
 static const QString AUTH_METHOD_DESCRIPTION = QStringLiteral( "OAuth2 authentication" );
 
-QMap<QString, QgsO2 * > QgsAuthOAuth2Method::smOAuth2ConfigCache =
+QMap<QString, QgsO2 * > QgsAuthOAuth2Method::sOAuth2ConfigCache =
   QMap<QString, QgsO2 * >();
 
 
@@ -145,7 +145,11 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
       // Try to get a refresh token first
       // go into local event loop and wait for a fired refresh-related slot
       QEventLoop rloop( qApp );
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
       rloop.connect( o2, SIGNAL( refreshFinished( QNetworkReply::NetworkError ) ), SLOT( quit() ) );
+#else
+      connect( o2, &QgsO2::refreshFinished, &rloop, &QEventLoop::quit );
+#endif
 
       // Asynchronously attempt the refresh
       // TODO: This already has a timed reply setup in O2 base class (and in QgsNetworkAccessManager!)
@@ -164,16 +168,27 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     // link app
     // clear any previous token session properties
     o2->unlink();
-
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     connect( o2, SIGNAL( linkedChanged() ), this, SLOT( onLinkedChanged() ), Qt::UniqueConnection );
     connect( o2, SIGNAL( linkingFailed() ), this, SLOT( onLinkingFailed() ), Qt::UniqueConnection );
     connect( o2, SIGNAL( linkingSucceeded() ), this, SLOT( onLinkingSucceeded() ), Qt::UniqueConnection );
     connect( o2, SIGNAL( openBrowser( QUrl ) ), this, SLOT( onOpenBrowser( QUrl ) ), Qt::UniqueConnection );
     connect( o2, SIGNAL( closeBrowser() ), this, SLOT( onCloseBrowser() ), Qt::UniqueConnection );
+#else
+    connect( o2, &QgsO2::linkedChanged, this, &QgsAuthOAuth2Method::onLinkedChanged, Qt::UniqueConnection );
+    connect( o2, &QgsO2::linkingFailed, this, &QgsAuthOAuth2Method::onLinkingFailed, Qt::UniqueConnection );
+    connect( o2, &QgsO2::linkingSucceeded, this, &QgsAuthOAuth2Method::onLinkingSucceeded, Qt::UniqueConnection );
+    connect( o2, &QgsO2::openBrowser, this, &QgsAuthOAuth2Method::onOpenBrowser, Qt::UniqueConnection );
+    connect( o2, &QgsO2::closeBrowser, this, &QgsAuthOAuth2Method::onCloseBrowser, Qt::UniqueConnection );
+#endif
 
     //qRegisterMetaType<QNetworkReply::NetworkError>( QStringLiteral( "QNetworkReply::NetworkError" )) // for Qt::QueuedConnection, if needed;
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     connect( o2, SIGNAL( refreshFinished( QNetworkReply::NetworkError ) ),
              this, SLOT( onRefreshFinished( QNetworkReply::NetworkError ) ), Qt::UniqueConnection );
+#else
+    connect( o2, &QgsO2::refreshFinished, this, &QgsAuthOAuth2Method::onRefreshFinished, Qt::UniqueConnection );
+#endif
 
 
     QSettings settings;
@@ -184,15 +199,24 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
     // go into local event loop and wait for a fired linking-related slot
     QEventLoop loop( qApp );
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     loop.connect( o2, SIGNAL( linkingFailed() ), SLOT( quit() ) );
     loop.connect( o2, SIGNAL( linkingSucceeded() ), SLOT( quit() ) );
+#else
+    connect( o2, &QgsO2::linkingFailed, &loop, &QEventLoop::quit );
+    connect( o2, &QgsO2::linkingSucceeded, &loop, &QEventLoop::quit );
+#endif
 
     // add singlshot timer to quit linking after an alloted timeout
     // this should keep the local event loop from blocking forever
     QTimer timer( this );
     timer.setInterval( reqtimeout * 5 );
     timer.setSingleShot( true );
+#if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     connect( &timer, SIGNAL( timeout() ), o2, SIGNAL( linkingFailed() ) );
+#else
+    connect( &timer, &QTimer::timeout, o2, &QgsO2::linkingFailed );
+#endif
     timer.start();
 
     // asynchronously attempt the linking
@@ -293,8 +317,11 @@ bool QgsAuthOAuth2Method::updateNetworkReply( QNetworkReply *reply, const QStrin
   }
   reply->setProperty( "authcfg", authcfg );
 
+  // converting this to new-style Qt5 connection causes odd linking error with static o2 library
   connect( reply, SIGNAL( error( QNetworkReply::NetworkError ) ),
-           this, SLOT( onRequestError( QNetworkReply::NetworkError ) ), Qt::QueuedConnection );
+           this, SLOT( onNetworkError( QNetworkReply::NetworkError ) ), Qt::QueuedConnection );
+  //connect( reply, static_cast<void ( QNetworkReply::* )( QNetworkReply::NetworkError )>( &QNetworkReply::error ),
+  //         this, &QgsAuthOAuth2Method::onNetworkError, Qt::QueuedConnection );
 
   QString msg = QStringLiteral( "Updated reply with token refresh connection for authcfg: %1" ).arg( authcfg );
   QgsMessageLog::logMessage( msg, AUTH_METHOD_KEY, QgsMessageLog::INFO );
@@ -488,10 +515,10 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
   // TODO: update to QgsMessageLog output where appropriate
 
   // check if it is cached
-  if ( smOAuth2ConfigCache.contains( authcfg ) )
+  if ( sOAuth2ConfigCache.contains( authcfg ) )
   {
     QgsDebugMsg( QStringLiteral( "Retrieving OAuth bundle for authcfg: %1" ).arg( authcfg ) );
-    return smOAuth2ConfigCache.value( authcfg );
+    return sOAuth2ConfigCache.value( authcfg );
   }
 
   QgsAuthOAuth2Config *config = new QgsAuthOAuth2Config( qApp );
@@ -611,15 +638,15 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
 void QgsAuthOAuth2Method::putOAuth2Bundle( const QString &authcfg, QgsO2 *bundle )
 {
   QgsDebugMsg( QStringLiteral( "Putting oauth2 bundle for authcfg: %1" ).arg( authcfg ) );
-  smOAuth2ConfigCache.insert( authcfg, bundle );
+  sOAuth2ConfigCache.insert( authcfg, bundle );
 }
 
 void QgsAuthOAuth2Method::removeOAuth2Bundle( const QString &authcfg )
 {
-  if ( smOAuth2ConfigCache.contains( authcfg ) )
+  if ( sOAuth2ConfigCache.contains( authcfg ) )
   {
-    smOAuth2ConfigCache.value( authcfg )->deleteLater();
-    smOAuth2ConfigCache.remove( authcfg );
+    sOAuth2ConfigCache.value( authcfg )->deleteLater();
+    sOAuth2ConfigCache.remove( authcfg );
     QgsDebugMsg( QStringLiteral( "Removed oauth2 bundle for authcfg: %1" ).arg( authcfg ) );
   }
 }
