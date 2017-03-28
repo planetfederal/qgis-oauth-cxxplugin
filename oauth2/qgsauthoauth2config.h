@@ -24,8 +24,11 @@
 
 #ifndef QStringLiteral
 // add define for Qt4
-// source code is assumed to be encoded in UTF-8
-# define QStringLiteral(str) QString::fromUtf8(str, sizeof(str) - 1)
+// source code is assumed to be encoded in UTF-8 (as per Qt5 macro)
+//# define QStringLiteral(str) QString::fromUtf8(str, sizeof(str) - 1)
+// but... that macro does not appear to work on Linux with GCC,
+// just add QString() stub
+# define QStringLiteral(str) QString(str)
 #endif
 
 
