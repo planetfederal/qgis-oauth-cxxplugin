@@ -265,6 +265,10 @@ TARGET_LINK_LIBRARIES (oauth2authmethod_static
   ${OAUTH2_TARGET_LIBS}
 )
 
+if(WIN32)
+  add_definitions(-DO2_DLL_EXPORT)
+endif()
+
 
 ########################################################
 # Install
