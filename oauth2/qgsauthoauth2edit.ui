@@ -946,21 +946,30 @@
   <tabstop>leRequestUrl</tabstop>
   <tabstop>leTokenUrl</tabstop>
   <tabstop>leRefreshTokenUrl</tabstop>
+  <tabstop>spnbxRedirectPort</tabstop>
+  <tabstop>leRedirectUrl</tabstop>
   <tabstop>leClientId</tabstop>
   <tabstop>leClientSecret</tabstop>
   <tabstop>leUsername</tabstop>
   <tabstop>lePassword</tabstop>
   <tabstop>leScope</tabstop>
   <tabstop>leState</tabstop>
-  <tabstop>tblwdgQueryPairs</tabstop>
-  <tabstop>btnGetDefinedDirPath</tabstop>
-  <tabstop>leDefinedDirPath</tabstop>
+  <tabstop>leApiKey</tabstop>
+  <tabstop>chkbxTokenPersist</tabstop>
+  <tabstop>cmbbxAccessMethod</tabstop>
+  <tabstop>spnbxRequestTimeout</tabstop>
   <tabstop>scrollAreaAdvanced</tabstop>
-  <tabstop>btnImport</tabstop>
-  <tabstop>btnExport</tabstop>
-  <tabstop>tabConfigs</tabstop>
+  <tabstop>tblwdgQueryPairs</tabstop>
   <tabstop>btnAddQueryPair</tabstop>
   <tabstop>btnRemoveQueryPair</tabstop>
+  <tabstop>btnExport</tabstop>
+  <tabstop>btnImport</tabstop>
+  <tabstop>leDefinedDirPath</tabstop>
+  <tabstop>tabConfigs</tabstop>
+  <tabstop>scrollAreaCustom</tabstop>
+  <tabstop>btnGetDefinedDirPath</tabstop>
+  <tabstop>lstwdgDefinedConfigs</tabstop>
+  <tabstop>pteDefinedDesc</tabstop>
  </tabstops>
  <resources>
   <include location="oauth2_resources.qrc"/>
