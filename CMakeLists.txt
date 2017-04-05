@@ -37,6 +37,10 @@ else()
   add_definitions("-Dnullptr=0")
 endif()
 
+if(APPLE)
+  add_definitions(-DQT_NO_CAST_TO_ASCII)
+endif(APPLE)
+
 option(ENABLE_TESTS "Enable building of unit tests" ON)
 
 option(BUILD_TEST_APP "Build test app" OFF)
