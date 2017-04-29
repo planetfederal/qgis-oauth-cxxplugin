@@ -8,12 +8,12 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-# NOTE: These are temporary source code provenance endpoints, until necessary
-#       commits are done upstream to support the OAuth2 plugin
-set(_o2_commit 60ed084de1330ef540bbb8c7c94b14d21d7c8c8c)
-set(_o2_url "https://github.com/MonsantoCo/o2/archive/${_o2_commit}.tar.gz")
+# NOTE: These is a temporary source code commit checkout, until a releas with
+#       recent commits is available via common platform packaging
+set(_o2_commit 31ceafb3f0c3b605110ddd20aeebd3288504ee1f)
+set(_o2_url "https://github.com/pipacs/o2/archive/${_o2_commit}.tar.gz")
 set(_o2_dl_file "${CMAKE_BINARY_DIR}/o2-${_o2_commit}.tar.gz")
-set(_o2_dl_sha1 5fbf91683ed7e639906c1dd7076940a698f37a9d)
+set(_o2_dl_sha1 94236af3c373927d778349cdbe89ff6112343cc9)
 set(_o2_dl_timeout 45)
 set(_o2_dl_inactive_timeout 30)
 
