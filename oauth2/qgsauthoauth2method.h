@@ -68,15 +68,15 @@ class QgsAuthOAuth2Method : public QgsAuthMethod
   private:
     QString mTempStorePath;
 
-    QgsO2* getOAuth2Bundle( const QString &authcfg, bool fullconfig = true );
+    QgsO2 *getOAuth2Bundle( const QString &authcfg, bool fullconfig = true );
 
-    void putOAuth2Bundle( const QString &authcfg, QgsO2* bundle );
+    void putOAuth2Bundle( const QString &authcfg, QgsO2 *bundle );
 
     void removeOAuth2Bundle( const QString &authcfg );
 
-    static QMap<QString, QgsO2*> sOAuth2ConfigCache;
+    static QMap<QString, QgsO2 *> sOAuth2ConfigCache;
 
-    QgsO2* authO2( const QString &authcfg );
+    QgsO2 *authO2( const QString &authcfg );
 };
 
 #endif // QGSAUTHOAUTH2METHOD_H

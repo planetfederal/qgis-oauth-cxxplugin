@@ -188,7 +188,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QScrollArea" name="scrollAreaCustom">
+         <widget class="QScrollArea" name="scrollAreaConfigure">
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
@@ -966,7 +966,7 @@
   <tabstop>btnImport</tabstop>
   <tabstop>leDefinedDirPath</tabstop>
   <tabstop>tabConfigs</tabstop>
-  <tabstop>scrollAreaCustom</tabstop>
+  <tabstop>scrollAreaConfigure</tabstop>
   <tabstop>btnGetDefinedDirPath</tabstop>
   <tabstop>lstwdgDefinedConfigs</tabstop>
   <tabstop>pteDefinedDesc</tabstop>

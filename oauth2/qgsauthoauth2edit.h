@@ -63,7 +63,7 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
     void addQueryPair();
     void removeQueryPair();
     void clearQueryPairs();
-    void populateQueryPairs( const QVariantMap &querypairs , bool append = false );
+    void populateQueryPairs( const QVariantMap &querypairs, bool append = false );
     void queryTableSelectionChanged();
     void updateConfigQueryPairs();
 
@@ -86,8 +86,8 @@ class QgsAuthOAuth2Edit : public QgsAuthMethodEdit, private Ui::QgsAuthOAuth2Edi
   private:
     void initGui();
 
-    QWidget* parentWidget() const;
-    QLineEdit * parentNameField() const;
+    QWidget *parentWidget() const;
+    QLineEdit *parentNameField() const;
     QString parentConfigId() const;
 
     void initConfigObjs();

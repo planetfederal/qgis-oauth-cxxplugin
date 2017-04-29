@@ -38,7 +38,7 @@ QgsO2::QgsO2( const QString &authcfg, QgsAuthOAuth2Config *oauth2config,
 QgsO2::~QgsO2()
 {
   // FIXME: This crashes app on QgsApplication destruction
-  //        Verify that objects are acutally being deleted via QgsAuthManager's destruction
+  //        Verify that objects are actually being deleted via QgsAuthManager's destruction
   //mOAuth2Config->deleteLater();
 
   if ( mTokenCacheFile.startsWith( QgsAuthOAuth2Config::tokenCacheDirectory( true ) )
@@ -103,7 +103,7 @@ void QgsO2::initOAuthConfig()
 
   setSettingsStore( mOAuth2Config->persistToken() );
 
-  setVerficationResponseContent();
+  setVerificationResponseContent();
 }
 
 void QgsO2::setSettingsStore( bool persist )
@@ -116,7 +116,7 @@ void QgsO2::setSettingsStore( bool persist )
   setStore( store );
 }
 
-void QgsO2::setVerficationResponseContent()
+void QgsO2::setVerificationResponseContent()
 {
   QFile verhtml( QStringLiteral( ":/oauth2method/oauth2_verification_finished.html" ) );
   if ( verhtml.open( QIODevice::ReadOnly | QIODevice::Text ) )
