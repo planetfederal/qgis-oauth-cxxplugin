@@ -17,6 +17,7 @@
 
 #include <QDir>
 #include <QFileDialog>
+#include <QSettings>
 
 #include "qgsauthguiutils.h"
 #include "qgsauthmanager.h"
