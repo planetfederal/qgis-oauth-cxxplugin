@@ -1,6 +1,8 @@
 @echo off
 
-call "Z:\qgis-build\build\win\build-batch-scripts\config-paths-64.bat"
+setlocal
+
+call "X:\desktop-build\build\win\dev-batch-scripts\config-paths.bat"
 call "%OSGEO4W_ROOT%\bin\o4w_env.bat"
 
 set O4W_ROOT=%OSGEO4W_ROOT:\=/%
@@ -18,7 +20,6 @@ set LIB=%LIB%;%OSGEO4W_ROOT%\lib;%OSGEO4W_ROOT%\apps\Python27\libs
 set INCLUDE=%INCLUDE%;%OSGEO4W_ROOT%\include
 
 set BUILDCONF=RelWithDebInfo
-set QGIS_DIR_NAME=qgis-ltr-dev
 
 echo "PATH: %PATH%"
 echo "LIB: %LIB%"
