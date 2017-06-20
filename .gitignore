@@ -1,5 +1,6 @@
 ~*
 build_*/
+build/*
 scripts
 *.prepare
 astyle.*.diff
@@ -8,3 +9,4 @@ sha-*.diff
 *.zip
 diffs
 oauth2-test-app/images
+oauth2-authmethod/
