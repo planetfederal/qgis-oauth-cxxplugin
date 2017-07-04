@@ -10,3 +10,4 @@ sha-*.diff
 diffs
 oauth2-test-app/images
 oauth2-authmethod/
+*.tar
