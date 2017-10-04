@@ -33,6 +33,7 @@
 #include <QEventLoop>
 #include <QSettings>
 #include <QString>
+#include <QMutexLocker>
 
 
 static const QString AUTH_METHOD_KEY = QStringLiteral( "OAuth2" );
@@ -102,8 +103,9 @@ QString QgsAuthOAuth2Method::displayDescription() const
 
 bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const QString &authcfg,
     const QString &dataprovider )
-{
+{  
   Q_UNUSED( dataprovider )
+  QMutexLocker locker( &mUpdateNetworkRequestMutex );
 
   QString msg;
 
@@ -144,7 +146,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
       // Try to get a refresh token first
       // go into local event loop and wait for a fired refresh-related slot
-      QEventLoop rloop( qApp );
+      QEventLoop rloop( this );
 #if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
       rloop.connect( o2, SIGNAL( refreshFinished( QNetworkReply::NetworkError ) ), SLOT( quit() ) );
 #else
@@ -198,7 +200,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     settings.setValue( timeoutkey, reqtimeout );
 
     // go into local event loop and wait for a fired linking-related slot
-    QEventLoop loop( qApp );
+    QEventLoop loop( this );
 #if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     loop.connect( o2, SIGNAL( linkingFailed() ), SLOT( quit() ) );
     loop.connect( o2, SIGNAL( linkingSucceeded() ), SLOT( quit() ) );
@@ -207,7 +209,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     connect( o2, &QgsO2::linkingSucceeded, &loop, &QEventLoop::quit );
 #endif
 
-    // add singlshot timer to quit linking after an alloted timeout
+    // add singleshot timer to quit linking after an alloted timeout
     // this should keep the local event loop from blocking forever
     QTimer timer( this );
     timer.setInterval( reqtimeout * 5 );
@@ -513,6 +515,7 @@ void QgsAuthOAuth2Method::clearCachedConfig( const QString &authcfg )
 QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullconfig )
 {
   // TODO: update to QgsMessageLog output where appropriate
+  QMutexLocker locker( &mConfigCacheMutex );
 
   // check if it is cached
   if ( sOAuth2ConfigCache.contains( authcfg ) )
@@ -521,7 +524,7 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
     return sOAuth2ConfigCache.value( authcfg );
   }
 
-  QgsAuthOAuth2Config *config = new QgsAuthOAuth2Config( qApp );
+  QgsAuthOAuth2Config *config = new QgsAuthOAuth2Config( this );
   QgsO2 *nullbundle =  nullptr;
 
   // else build oauth2 config
@@ -574,7 +577,7 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
       QgsDebugMsg( QStringLiteral( "No custom defined dir path to load OAuth2 config" ) );
     }
 
-    QgsStringMap definedcache = QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( extradir );
+    QgsStringMap definedcache = QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( this, extradir );
 
     if ( !definedcache.contains( definedid ) )
     {
@@ -627,9 +630,10 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
   QgsDebugMsg( QStringLiteral( "Loading authenticator object with %1 flow properties of OAuth2 config: %2" )
                .arg( QgsAuthOAuth2Config::grantFlowString( config->grantFlow() ), authcfg ) );
 
-  QgsO2 *o2 = new QgsO2( authcfg, config, qApp, QgsNetworkAccessManager::instance() );
+  QgsO2 *o2 = new QgsO2( authcfg, config, this, QgsNetworkAccessManager::instance() );
 
   // cache bundle
+  locker.unlock();
   putOAuth2Bundle( authcfg, o2 );
 
   return o2;
@@ -637,12 +641,14 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
 
 void QgsAuthOAuth2Method::putOAuth2Bundle( const QString &authcfg, QgsO2 *bundle )
 {
+  QMutexLocker locker( &mConfigCacheMutex );
   QgsDebugMsg( QStringLiteral( "Putting oauth2 bundle for authcfg: %1" ).arg( authcfg ) );
   sOAuth2ConfigCache.insert( authcfg, bundle );
 }
 
 void QgsAuthOAuth2Method::removeOAuth2Bundle( const QString &authcfg )
 {
+  QMutexLocker locker( &mConfigCacheMutex );
   if ( sOAuth2ConfigCache.contains( authcfg ) )
   {
     sOAuth2ConfigCache.value( authcfg )->deleteLater();
