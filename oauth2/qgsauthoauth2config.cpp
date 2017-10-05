@@ -765,6 +765,7 @@ QString QgsAuthOAuth2Config::configTypeString( QgsAuthOAuth2Config::ConfigType c
     case QgsAuthOAuth2Config::Custom:
       return tr( "Custom" );
     case QgsAuthOAuth2Config::Predefined:
+    default:
       return tr( "Predefined" );
   }
 }
@@ -779,6 +780,7 @@ QString QgsAuthOAuth2Config::grantFlowString( QgsAuthOAuth2Config::GrantFlow flo
     case QgsAuthOAuth2Config::Implicit:
       return tr( "Implicit" );
     case QgsAuthOAuth2Config::ResourceOwner:
+    default:
       return tr( "Resource Owner" );
   }
 }
@@ -793,6 +795,7 @@ QString QgsAuthOAuth2Config::accessMethodString( QgsAuthOAuth2Config::AccessMeth
     case QgsAuthOAuth2Config::Form:
       return tr( "Form (POST only)" );
     case QgsAuthOAuth2Config::Query:
+    default:
       return tr( "URL Query" );
   }
 }

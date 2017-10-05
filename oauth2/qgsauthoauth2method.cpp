@@ -33,6 +33,7 @@
 #include <QEventLoop>
 #include <QSettings>
 #include <QString>
+#include <QMutexLocker>
 
 
 static const QString AUTH_METHOD_KEY = QStringLiteral( "OAuth2" );
@@ -105,6 +106,8 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 {
   Q_UNUSED( dataprovider )
 
+  QMutexLocker locker( &mNetworkRequestMutex );
+
   QString msg;
 
   QgsO2 *o2 = getOAuth2Bundle( authcfg );
@@ -144,7 +147,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
       // Try to get a refresh token first
       // go into local event loop and wait for a fired refresh-related slot
-      QEventLoop rloop( qApp );
+      QEventLoop rloop( this );
 #if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
       rloop.connect( o2, SIGNAL( refreshFinished( QNetworkReply::NetworkError ) ), SLOT( quit() ) );
 #else
@@ -198,7 +201,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     settings.setValue( timeoutkey, reqtimeout );
 
     // go into local event loop and wait for a fired linking-related slot
-    QEventLoop loop( qApp );
+    QEventLoop loop( this );
 #if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     loop.connect( o2, SIGNAL( linkingFailed() ), SLOT( quit() ) );
     loop.connect( o2, SIGNAL( linkingSucceeded() ), SLOT( quit() ) );
@@ -302,6 +305,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 bool QgsAuthOAuth2Method::updateNetworkReply( QNetworkReply *reply, const QString &authcfg, const QString &dataprovider )
 {
   Q_UNUSED( dataprovider )
+  QMutexLocker locker( &mNetworkRequestMutex );
 
   // TODO: handle token refresh error on the reply, see O2Requestor::onRequestError()
   // Is this doable if the errors are also handled in qgsapp (and/or elsewhere)?
@@ -421,6 +425,7 @@ void QgsAuthOAuth2Method::onReplyFinished()
 
 void QgsAuthOAuth2Method::onNetworkError( QNetworkReply::NetworkError err )
 {
+  QMutexLocker locker( &mNetworkRequestMutex );
   QString msg;
   QNetworkReply *reply = qobject_cast<QNetworkReply *>( sender() );
   if ( !reply )
@@ -521,7 +526,7 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
     return sOAuth2ConfigCache.value( authcfg );
   }
 
-  QgsAuthOAuth2Config *config = new QgsAuthOAuth2Config( qApp );
+  QgsAuthOAuth2Config *config = new QgsAuthOAuth2Config( );
   QgsO2 *nullbundle =  nullptr;
 
   // else build oauth2 config
@@ -627,7 +632,7 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
   QgsDebugMsg( QStringLiteral( "Loading authenticator object with %1 flow properties of OAuth2 config: %2" )
                .arg( QgsAuthOAuth2Config::grantFlowString( config->grantFlow() ), authcfg ) );
 
-  QgsO2 *o2 = new QgsO2( authcfg, config, qApp, QgsNetworkAccessManager::instance() );
+  QgsO2 *o2 = new QgsO2( authcfg, config, nullptr, QgsNetworkAccessManager::instance() );
 
   // cache bundle
   putOAuth2Bundle( authcfg, o2 );
