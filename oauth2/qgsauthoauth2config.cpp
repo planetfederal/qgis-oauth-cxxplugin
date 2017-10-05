@@ -706,7 +706,7 @@ QgsStringMap QgsAuthOAuth2Config::mapOAuth2Configs(
   return configs;
 }
 
-QgsStringMap QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( const QString &extradir )
+QgsStringMap QgsAuthOAuth2Config::mappedOAuth2ConfigsCache(QObject *parent, const QString &extradir )
 {
   QgsStringMap configs;
   bool ok = false;
@@ -731,7 +731,7 @@ QgsStringMap QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( const QString &extra
       continue;
     }
     QgsStringMap newconfigs = QgsAuthOAuth2Config::mapOAuth2Configs(
-                                configdirinfo.canonicalFilePath(), qApp, QgsAuthOAuth2Config::JSON, &ok );
+                                configdirinfo.canonicalFilePath(), parent, QgsAuthOAuth2Config::JSON, &ok );
     if ( ok )
     {
       QgsStringMap::const_iterator i = newconfigs.constBegin();

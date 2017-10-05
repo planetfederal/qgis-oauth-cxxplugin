@@ -147,7 +147,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
       // Try to get a refresh token first
       // go into local event loop and wait for a fired refresh-related slot
-      QEventLoop rloop( this );
+      QEventLoop rloop( nullptr );
 #if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
       rloop.connect( o2, SIGNAL( refreshFinished( QNetworkReply::NetworkError ) ), SLOT( quit() ) );
 #else
@@ -201,7 +201,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
     settings.setValue( timeoutkey, reqtimeout );
 
     // go into local event loop and wait for a fired linking-related slot
-    QEventLoop loop( this );
+    QEventLoop loop( nullptr );
 #if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
     loop.connect( o2, SIGNAL( linkingFailed() ), SLOT( quit() ) );
     loop.connect( o2, SIGNAL( linkingSucceeded() ), SLOT( quit() ) );
@@ -212,7 +212,7 @@ bool QgsAuthOAuth2Method::updateNetworkRequest( QNetworkRequest &request, const 
 
     // add singlshot timer to quit linking after an alloted timeout
     // this should keep the local event loop from blocking forever
-    QTimer timer( this );
+    QTimer timer( nullptr );
     timer.setInterval( reqtimeout * 5 );
     timer.setSingleShot( true );
 #if QT_VERSION < QT_VERSION_CHECK( 5, 0, 0 )
@@ -579,7 +579,7 @@ QgsO2 *QgsAuthOAuth2Method::getOAuth2Bundle( const QString &authcfg, bool fullco
       QgsDebugMsg( QStringLiteral( "No custom defined dir path to load OAuth2 config" ) );
     }
 
-    QgsStringMap definedcache = QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( extradir );
+    QgsStringMap definedcache = QgsAuthOAuth2Config::mappedOAuth2ConfigsCache( this, extradir );
 
     if ( !definedcache.contains( definedid ) )
     {
