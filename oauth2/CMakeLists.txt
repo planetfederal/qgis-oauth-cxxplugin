@@ -1,5 +1,7 @@
 # OAuth 2 Authentication Method plugin
 
+SET(PLUGIN_NAME OAuth2)
+
 ########################################################
 # Packages
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
@@ -18,10 +20,10 @@ ENDIF()
 
 IF("${QGIS_VERSION}" VERSION_LESS "2.99.0")
   SET(QGIS2 TRUE)
-  MESSAGE(STATUS "QGIS target version for OAuth2 plugin set to 2.x")
+  MESSAGE(STATUS "QGIS target version for ${PLUGIN_NAME} plugin set to 2.x")
 ELSE()
   SET(QGIS2 FALSE)
-  MESSAGE(STATUS "QGIS target version for OAuth2 plugin set to 3.x")
+  MESSAGE(STATUS "QGIS target version for ${PLUGIN_NAME} plugin set to 3.x")
 ENDIF()
 
 IF(QGIS2)
@@ -52,7 +54,7 @@ ENDIF()
 ########################################################
 # Source files
 
-SET(OAUTH2_SRCS
+SET(PLUGIN_SRCS
   qgso2.cpp
   qgsauthoauth2config.cpp
   qgsauthoauth2method.cpp
@@ -70,10 +72,10 @@ IF(WITH_INTERNAL_O2)
     ${O2_SOURCE_DIR}/o2requestor.cpp
     ${O2_SOURCE_DIR}/o2simplecrypt.cpp
   )
-  SET(OAUTH2_SRCS ${OAUTH2_SRCS} ${O2_SRCS})
+  SET(PLUGIN_SRCS ${PLUGIN_SRCS} ${O2_SRCS})
 ENDIF()
 
-SET(OAUTH2_HDRS
+SET(PLUGIN_HDRS
   qgso2.h
   qgsauthoauth2config.h
   qgsauthoauth2method.h
@@ -95,10 +97,10 @@ IF(WITH_INTERNAL_O2)
     ${O2_INCLUDE_DIR}/o2replyserver.h
     ${O2_INCLUDE_DIR}/o2requestor.h
   )
-  SET(OAUTH2_HDRS ${OAUTH2_HDRS} ${O2_HDRS})
+  SET(PLUGIN_HDRS ${PLUGIN_HDRS} ${O2_HDRS})
 ENDIF()
 
-SET(OAUTH2_MOC_HDRS
+SET(PLUGIN_MOC_HDRS
   qgso2.h
   qgsauthoauth2config.h
   qgsauthoauth2method.h
@@ -115,19 +117,19 @@ IF(WITH_INTERNAL_O2)
     ${O2_INCLUDE_DIR}/o2replyserver.h
     ${O2_INCLUDE_DIR}/o2requestor.h
   )
-  SET(OAUTH2_MOC_HDRS ${OAUTH2_MOC_HDRS} ${O2_MOC_HDRS})
+  SET(PLUGIN_MOC_HDRS ${PLUGIN_MOC_HDRS} ${O2_MOC_HDRS})
 ENDIF()
 
 IF(QGIS2)
   # QgsPasswordLineEdit is in QGIS 2.99 at 85776a1
-  SET(OAUTH2_SRCS ${OAUTH2_SRCS} qgis2-ui/qgspasswordlineedit.cpp)
-  SET(OAUTH2_HDRS ${OAUTH2_HDRS} qgis2-ui/qgspasswordlineedit.h)
-  SET(OAUTH2_MOC_HDRS ${OAUTH2_MOC_HDRS} qgis2-ui/qgspasswordlineedit.h)
+  SET(PLUGIN_SRCS ${PLUGIN_SRCS} qgis2-ui/qgspasswordlineedit.cpp)
+  SET(PLUGIN_HDRS ${PLUGIN_HDRS} qgis2-ui/qgspasswordlineedit.h)
+  SET(PLUGIN_MOC_HDRS ${PLUGIN_MOC_HDRS} qgis2-ui/qgspasswordlineedit.h)
 ENDIF()
 
-SET(OAUTH2_UIS qgsauthoauth2edit.ui)
+SET(PLUGIN_UIS qgsauthoauth2edit.ui)
 
-SET(OAUTH2_RCCS oauth2_resources.qrc)
+SET(PLUGIN_RCCS oauth2_resources.qrc)
 
 # Common includes
 INCLUDE_DIRECTORIES (
@@ -188,64 +190,65 @@ IF(WITH_INTERNAL_O2 AND CMAKE_GENERATOR MATCHES "Ninja")
   )
 ENDIF()
 
-QT4_WRAP_UI(OAUTH2_UIS_H ${OAUTH2_UIS})
+QT4_WRAP_UI(PLUGIN_UIS_H ${PLUGIN_UIS})
 
-QT4_WRAP_CPP(OAUTH2_MOC_SRCS ${OAUTH2_MOC_HDRS})
+QT4_WRAP_CPP(PLUGIN_MOC_SRCS ${PLUGIN_MOC_HDRS})
 
-QT4_ADD_RESOURCES(OAUTH2_RCC_SRCS ${OAUTH2_RCCS})
-
+QT4_ADD_RESOURCES(PLUGIN_RCC_SRCS ${PLUGIN_RCCS})
 
 ############################################################
 # Set up plugin targets
 
 ADD_LIBRARY (oauth2authmethod MODULE
-  ${OAUTH2_SRCS}
-  ${OAUTH2_HDRS}
-  ${OAUTH2_MOC_SRCS}
-  ${OAUTH2_RCC_SRCS}
-  ${OAUTH2_UIS_H}
+  ${PLUGIN_SRCS}
+  ${PLUGIN_HDRS}
+  ${PLUGIN_MOC_SRCS}
+  ${PLUGIN_RCC_SRCS}
+  ${PLUGIN_UIS_H}
 )
 
 # For unit testing
-ADD_LIBRARY (oauth2authmethod_static STATIC
-  ${OAUTH2_SRCS}
-  ${OAUTH2_HDRS}
-  ${OAUTH2_MOC_SRCS}
-  ${OAUTH2_RCC_SRCS}
-  ${OAUTH2_UIS_H}
-)
+IF(ENABLE_TESTS)
+  ADD_LIBRARY (oauth2authmethod_static STATIC
+    ${PLUGIN_SRCS}
+    ${PLUGIN_HDRS}
+    ${PLUGIN_MOC_SRCS}
+    ${PLUGIN_RCC_SRCS}
+    ${PLUGIN_UIS_H}
+  )
+ENDIF(ENABLE_TESTS)
 
 # Common linked libs
-SET(OAUTH2_TARGET_LIBS ${QTKEYCHAIN_LIBRARY})
+SET(PLUGIN_TARGET_LIBS ${QTKEYCHAIN_LIBRARY})
 
 IF(NOT WITH_INTERNAL_O2)
   IF(NOT "${O2_LIBRARY}" STREQUAL "")
     # prefer dynamic linking
-    SET(OAUTH2_TARGET_LIBS ${OAUTH2_TARGET_LIBS} ${O2_LIBRARY})
+    SET(PLUGIN_TARGET_LIBS ${PLUGIN_TARGET_LIBS} ${O2_LIBRARY})
   ELSE()
-    SET(OAUTH2_TARGET_LIBS ${OAUTH2_TARGET_LIBS} ${O2_LIBRARY_STATIC})
+    SET(PLUGIN_TARGET_LIBS ${PLUGIN_TARGET_LIBS} ${O2_LIBRARY_STATIC})
   ENDIF()
-  #message(STATUS "OAUTH2_TARGET_LIBS: ${OAUTH2_TARGET_LIBS}")
+  #message(STATUS "PLUGIN_TARGET_LIBS: ${PLUGIN_TARGET_LIBS}")
 ENDIF()
 
 IF(QGIS2)
-  SET(OAUTH2_TARGET_LIBS
+  SET(PLUGIN_TARGET_LIBS
     ${QT_QTSCRIPT_LIBRARY}
     ${QJSON_LIBRARIES}
-    ${OAUTH2_TARGET_LIBS}
+    ${PLUGIN_TARGET_LIBS}
   )
 ENDIF()
 
 IF(IN_QGIS_SRC)
   # in QGIS source tree
-  SET(OAUTH2_TARGET_LIBS
+  SET(PLUGIN_TARGET_LIBS
     qgis_core
     qgis_gui
-    ${OAUTH2_TARGET_LIBS}
+    ${PLUGIN_TARGET_LIBS}
   )
 ELSE(IN_QGIS_SRC)
   # outside QGIS source tree
-  SET(OAUTH2_TARGET_LIBS
+  SET(PLUGIN_TARGET_LIBS
     ${QGIS_CORE_LIBRARY}
     ${QGIS_GUI_LIBRARY}
     ${QT_QTMAIN_LIBRARY}
@@ -254,16 +257,19 @@ ELSE(IN_QGIS_SRC)
     ${QT_QTGUI_LIBRARY}
     ${QT_QTNETWORK_LIBRARY}
     ${QT_QTSVG_LIBRARY}
-    ${OAUTH2_TARGET_LIBS}
+    ${PLUGIN_TARGET_LIBS}
   )
 ENDIF(IN_QGIS_SRC)
 
 TARGET_LINK_LIBRARIES (oauth2authmethod
-  ${OAUTH2_TARGET_LIBS}
+  ${PLUGIN_TARGET_LIBS}
 )
-TARGET_LINK_LIBRARIES (oauth2authmethod_static
-  ${OAUTH2_TARGET_LIBS}
-)
+
+IF(ENABLE_TESTS)
+  TARGET_LINK_LIBRARIES (oauth2authmethod_static
+    ${PLUGIN_TARGET_LIBS}
+  )
+ENDIF(ENABLE_TESTS)
 
 if(WIN32)
   add_definitions(-DO2_DLL_EXPORT)
@@ -272,6 +278,7 @@ endif()
 
 ########################################################
 # Install
+
 # don't install static variant, as it's only for unit testing from build directory
 INSTALL(TARGETS oauth2authmethod
   RUNTIME DESTINATION ${QGIS_PLUGIN_DIR}
