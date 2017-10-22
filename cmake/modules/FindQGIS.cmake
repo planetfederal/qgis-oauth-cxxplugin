@@ -8,6 +8,7 @@
 ## QGIS_PLUGIN_DIR       = full path to where QGIS plugins are installed
 ## QGIS_INCLUDE_DIR      = where to find headers
 ## QGIS_UI_INCLUDE_DIR   = where to find ui_* generated headers
+## QGIS_SIP_DIR          = where to find qgis class sip bindings
 ##
 ## QGIS_VERSION          = version as defined in qgsconfig.h, as major.minor.patch
 ##
@@ -52,6 +53,11 @@ IF(WIN32)
     )
     FIND_LIBRARY(QGIS_GUI_LIBRARY
       NAMES qgis_gui
+      PATHS
+        "$ENV{PROGRAMFILES}/QGIS/"
+    )
+    FIND_PATH(QGIS_SIP_DIR
+      NAMES _core.lib
       PATHS
         "$ENV{PROGRAMFILES}/QGIS/"
     )
@@ -100,6 +106,18 @@ IF(WIN32)
         "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
         "$ENV{PROGRAMFILES}/QGIS/lib"
     )
+    FIND_PATH(QGIS_SIP_DIR
+      NAMES core.sip
+      PATHS
+        "$ENV{LIB_DIR}"
+        "$ENV{LIB}"
+        "$ENV{OSGEO4W_ROOT}/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/lib"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/python"
+        "$ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}/python/qgis"
+        "$ENV{PROGRAMFILES}/QGIS/lib"
+        "$ENV{PROGRAMFILES}/QGIS/python"
+    )
   ENDIF (MSVC)
 ELSE(WIN32)
   IF(UNIX)
@@ -130,6 +148,18 @@ ELSE(WIN32)
     )
     FIND_PATH(QGIS_UI_INCLUDE_DIR
       NAMES ui_qgscredentialdialog.h
+      PATHS
+        ${QGIS_BUILD_PATH}/src/ui
+        ${QGIS_MAC_PATH}/Frameworks/qgis_gui.framework/Headers
+        {QGIS_PREFIX_PATH}/include/qgis
+        /usr/include/qgis
+        /usr/local/include/qgis
+        /Library/Frameworks/qgis_gui.framework/Headers
+        "$ENV{LIB_DIR}/include/qgis"
+    )
+    # FIXME the following doesn't make sense [LS]
+    FIND_PATH(QGIS_SIP_DIR
+      NAMES _core.lib
       PATHS
         ${QGIS_BUILD_PATH}/src/ui
         ${QGIS_MAC_PATH}/Frameworks/qgis_gui.framework/Headers
@@ -236,10 +266,13 @@ ENDIF ()
 IF (QGIS_FOUND)
    IF (NOT QGIS_FIND_QUIETLY)
      MESSAGE(STATUS "Found QGIS: ${QGIS_VERSION}")
+     MESSAGE(STATUS "Found QGIS includes: ${QGIS_INCLUDE_DIR}")
      MESSAGE(STATUS "Found QGIS core: ${QGIS_CORE_LIBRARY}")
      MESSAGE(STATUS "Found QGIS gui: ${QGIS_GUI_LIBRARY}")
      MESSAGE(STATUS "Found QGIS analysis: ${QGIS_ANALYSIS_LIBRARY}")
      MESSAGE(STATUS "Found QGIS plugins directory: ${QGIS_PLUGIN_DIR}")
+     MESSAGE(STATUS "Found QGIS ui_* includes: ${QGIS_UI_INCLUDE_DIR}")
+     MESSAGE(STATUS "Found QGIS SIP directory: ${QGIS_SIP_DIR}")
    ENDIF (NOT QGIS_FIND_QUIETLY)
 ELSE (QGIS_FOUND)
    IF (QGIS_FIND_REQUIRED)
